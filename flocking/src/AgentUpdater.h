@@ -20,11 +20,12 @@ public:
     explicit AgentUpdater(FlockingBehaviour* flockingBehaviour):
         m_flockingBehaviour(flockingBehaviour) {}
 
-    void update(Agent& agent);
-    sf::Vector2f flock(const Agent& agent);
-    void wraparound(Agent& agent);
-    sf::Vector2f steer(const Agent& agent, const sf::Vector2f& desired);
+    void update(Agent* agent);
+    sf::Vector2f flock(const Agent* agent);
+    void wraparound(Agent* agent) const;
+    sf::Vector2f steer(const Agent* agent, const sf::Vector2f& desired);
     sf::Vector2f limitMagnitude(sf::Vector2f baseVector, const float& maxMagnitude);
+    
 private:
     FlockingBehaviour* m_flockingBehaviour{ nullptr };
 };

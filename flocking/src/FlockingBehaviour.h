@@ -23,7 +23,7 @@ public:
 
   void reset();
 
-  const Agent& getSelectedAgent() const { return m_selectedAgent; }
+  const Agent* getSelectedAgent() const { return m_agents[m_selectedIndex]; }
 
   bool getShowCollider() const { return m_showCollider; }
   void toggleShowCollider() { m_showCollider = !m_showCollider; }
@@ -44,8 +44,7 @@ public:
   float getAgentSpeed() const;
   void setAgentSpeed(float speed) const;
 
-
-  std::vector<Agent*> getNeighbors(const Agent& agent) const;
+  std::vector<Agent*> getNeighbors(const Agent* agent) const;
 
   void spawnAgent();
   void removeLastAgent();
@@ -56,14 +55,12 @@ private:
   stho::ObjectPool<Agent>* m_agentPool{};
   AgentRenderer* m_agentRenderer{};
   AgentUpdater* m_agentUpdater{};
-  Agent m_selectedAgent;
   bool m_showCollider{false};
   bool m_showNeighborhood{false};
-  bool m_renderQuadTree{false};
+  bool m_renderQuadTree{true};
   bool m_useQuadTree{true};
-  int m_numberOfAgents{300};
+  int m_numberOfAgents{100};
   int m_selectedIndex{0};
 
   void _applyRandomPositionAndDirectionToAgents();
-
 };

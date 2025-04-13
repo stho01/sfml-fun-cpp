@@ -3,6 +3,11 @@
 //
 
 #include "extensions/Timer.h"
+#include "extensions/Logger.h"
+
+std::chrono::high_resolution_clock::time_point stho::Timer::m_prevTime;
+std::chrono::duration<double> stho::Timer::m_deltaTime;
+int stho::Timer::m_fps;
 
 void stho::Timer::update() {
     const auto now = std::chrono::high_resolution_clock::now();
@@ -12,17 +17,20 @@ void stho::Timer::update() {
 }
 
 int stho::Timer::fps(){
-    return instance().m_fps;
+    return m_fps;
 }
 
 std::chrono::duration<double> stho::Timer::getDeltaTime(){
-    return instance().m_deltaTime;
+    return m_deltaTime;
 }
 
 double stho::Timer::getDeltaTimeSeconds() {
-    return instance().m_deltaTime.count();
+    const auto deltaTime = m_deltaTime.count();
+    // const auto msg = std::format("Delta Time: {:.12f} seconds", deltaTime);
+    // Logger::Info(msg);
+    return deltaTime;
 }
 
 double stho::Timer::getDeltaTimeMilliseconds() {
-    return instance().m_deltaTime.count() * 1000;
+    return m_deltaTime.count() * 1000;
 }

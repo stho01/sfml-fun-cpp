@@ -67,9 +67,12 @@ void stho::GameBase::setKeyPressedHandler(std::function<void(sf::Keyboard::Key)>
 
 void stho::GameBase::start() {
     Logger::Info("Game started");
+
+    Timer::update(); // reset timers after initialization
+
     while (this->m_window->isOpen())
     {
-        Timer::instance().update();
+        Timer::update();
 
         while (const std::optional event = this->m_window->pollEvent())
         {

@@ -47,17 +47,16 @@ void FlockingBehaviour::update() {
 
     for (int i = 0; i < m_agents.size(); i++) {
         Agent* agent = m_agents[i];
-        m_agentUpdater->update(*agent);
-        m_agentRenderer->render(*agent);
+        m_agentUpdater->update(agent);
+        m_agentRenderer->render(agent);
     }
 }
 
 void FlockingBehaviour::render() {
     if (m_renderQuadTree && m_useQuadTree) {
         const auto boundaries = m_quadTree.getBoundaries();
-        for (int i = 0; i < boundaries.size(); i++)
+        for (const auto boundary : boundaries)
         {
-            const auto& boundary = boundaries[i];
             sf::RectangleShape shape;
             shape.setPosition(boundary.position);
             shape.setSize(boundary.size);
@@ -89,29 +88,27 @@ float FlockingBehaviour::getAgentSpeed() const {
     return m_agentUpdater->maxSpeed;
 }
 
-std::vector<Agent*> FlockingBehaviour::getNeighbors(const Agent& agent) const {
+std::vector<Agent*> FlockingBehaviour::getNeighbors(const Agent* agent) const {
     if (m_useQuadTree) {
-        const stho::FloatCircle neighborhood(agent.pos, agent.neighborhoodRadius);
+        const stho::FloatCircle neighborhood(agent->pos, agent->neighborhoodRadius);
         const auto potentialNeighbor = m_quadTree.queryRange(neighborhood);
 
         std::vector<Agent*> neighbors;
-        for (int i = 0; i < potentialNeighbor.size(); i++) {
-            if (potentialNeighbor[i] != &agent) {
-                neighbors.push_back(potentialNeighbor[i]);
+        for (auto i : potentialNeighbor) {
+            if (i != agent) {
+                neighbors.push_back(i);
             }
         }
         return neighbors;
     } else {
         std::vector<Agent*> neighbors;
-        for (int i = 0; i < m_agents.size(); i++) {
-            const auto potentialNeighbor = m_agents[i];
-            if (potentialNeighbor == &agent)
+        for (auto potentialNeighbor : m_agents) {
+            if (potentialNeighbor == agent)
                 continue;
 
-            const bool inNeighborhood = (potentialNeighbor->pos - agent.pos).lengthSquared() < agent.neighborhoodRadius * agent.neighborhoodRadius;
+            const bool inNeighborhood = (potentialNeighbor->pos - agent->pos).lengthSquared() < agent->neighborhoodRadius * agent->neighborhoodRadius;
             if (!inNeighborhood)
                 continue;
-
 
             neighbors.push_back(potentialNeighbor);
         }
@@ -126,12 +123,13 @@ void FlockingBehaviour::spawnAgent() {
     const auto agent = m_agentPool->acquire();
     agent->pos = randomPosition;
     agent->acceleration = randomDirection.normalized();
+    agent->velocity = agent->acceleration;
 
     m_agents.push_back(agent);
 }
 
 void FlockingBehaviour::removeLastAgent() {
-    if (m_agents.size() > 0) {
+    if (!m_agents.empty()) {
         const auto agent = m_agents.back();
         m_agents.pop_back();
         m_agentPool->release(agent);

@@ -17,7 +17,7 @@ void Game::initialize() {
 }
 
 void Game::update() {
-    Logger::Info(std::format("Delta Time: {:.2f} seconds", static_cast<float>(stho::Timer::getDeltaTimeSeconds())));
+    Logger::Info(std::format("Delta Time: {:.13f} seconds", static_cast<float>(stho::Timer::getDeltaTimeSeconds())));
 }
 
 void Game::render() {

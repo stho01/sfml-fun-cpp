@@ -20,14 +20,14 @@ public:
     explicit AgentRenderer(FlockingBehaviour* flockingBehaviour, sf::RenderTarget* renderTarget);
     ~AgentRenderer() = default;
 
-    void render(const Agent& agent);
-    void drawCollider(const Agent& agent, const AgentGeometry& geometry);
-    void drawNeighborhoodAreas(const Agent& agent, const AgentGeometry& geometry);
+    void render(const Agent* agent);
+    void drawCollider(const Agent* agent, const AgentGeometry& geometry);
+    void drawNeighborhoodAreas(const Agent* agent, const AgentGeometry& geometry);
 
 private:
 
-    void _drawAgent(const Agent& agent, const AgentGeometry& geometry);
-    AgentGeometry _getGeometry(const Agent& agent) const;
+    void _drawAgent(const Agent* agent, const AgentGeometry& geometry);
+    AgentGeometry _getGeometry(const Agent* agent) const;
 
     FlockingBehaviour* m_flockingBehaviour;
     sf::RenderTarget* m_renderTarget;

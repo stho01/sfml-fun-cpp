@@ -15,33 +15,37 @@ namespace stho {
     public:
         unsigned int boundaryCapacity = 4;
 
-        explicit QuadTree(const sf::FloatRect& boundary)
-            : m_boundary(boundary) {}
+        explicit QuadTree(const sf::FloatRect& boundary, const unsigned int capacity = 4)
+            : boundaryCapacity(capacity)
+            , m_boundary(boundary) { }
 
-        bool insert(const sf::Vector2f& vector, const T& data) {
-            if (!m_boundary.contains(vector))
+        bool insert(const sf::Vector2f& vector, const T data) {
+            if (!m_boundary.contains(vector)) {
                 return false;
+            }
 
-            if (m_data.size() < this->boundaryCapacity && this->m_northWest == nullptr) {
-                this->m_data.push_back({ vector, data });
+            if (m_data.size() < boundaryCapacity && !m_isSubdivided) {
+                m_data.push_back({ vector, data });
                 return true;
             }
 
-            if (this->m_northWest == nullptr)
-                this->_subdivide();
+            if (!m_isSubdivided) {
+                _subdivide();
+            }
 
-            if (this->m_northEast->insert(vector, data)) return true;
-            if (this->m_northWest->insert(vector, data)) return true;
-            if (this->m_southEast->insert(vector, data)) return true;
-            if (this->m_southWest->insert(vector, data)) return true;
+            for (auto& child : m_children) {
+                if (child->insert(vector, data)) {
+                    return true;
+                }
+            }
 
             return false;
         }
 
         std::vector<T> queryRange(const FloatCircle& boundary) const {
-            const auto rect = sf::FloatRect(
-            {boundary.x - boundary.radius, boundary.x - boundary.radius},
-            {boundary.radius, boundary.radius});
+            const sf::FloatRect rect(
+                {boundary.x - boundary.radius, boundary.x - boundary.radius},
+                {boundary.radius, boundary.radius});
 
             if (!m_boundary.findIntersection(rect).has_value())
                 return std::vector<T>();
@@ -53,30 +57,23 @@ namespace stho {
                 }
             }
 
-            for (int i = 0; i < m_data.size(); i++) {
-                if (auto datum = m_data[i]; boundary.contains(datum.point.x, datum.point.y)) {
-                    inRange.push_back(datum.data);
-                }
-            }
-
-            if (this->m_northWest == nullptr)
+            if (!m_isSubdivided)
                 return inRange;
 
-            auto b = m_northEast->queryRange(boundary);
-            for (int i = 0; i < b.size(); i++) inRange.push_back(b[i]);
-            b = m_northWest->queryRange(boundary);
-            for (int i = 0; i < b.size(); i++) inRange.push_back(b[i]);
-            b = m_southEast->queryRange(boundary);
-            for (int i = 0; i < b.size(); i++) inRange.push_back(b[i]);
-            b = m_southWest->queryRange(boundary);
-            for (int i = 0; i < b.size(); i++) inRange.push_back(b[i]);
+            for (auto& child : m_children) {
+                auto childItems = child->queryRange(boundary);
+
+                for (int j = 0; j < childItems.size(); j++) {
+                    inRange.push_back(childItems[j]);
+                }
+            }
 
             return inRange;
         }
 
         std::vector<T> queryRange(const sf::FloatRect& boundary) {
             if (!this->m_boundary.findIntersection(boundary).has_value())
-                return std::vector<T*>();
+                return std::vector<T>();
 
             std::vector<T> inRange;
 
@@ -86,19 +83,16 @@ namespace stho {
                     inRange.push_back(datum.data);
             }
 
-            if (this->m_northWest == nullptr)
+            if (!m_isSubdivided)
                 return inRange;
 
-            auto b = m_northEast.queryRange(boundary);
-            for (int i = 0; i < b.size(); i++) inRange.push_back(b[i]);
-            b = m_northWest.queryRange(boundary);
-            for (int i = 0; i < b.size(); i++) inRange.push_back(b[i]);
-            b = m_southEast.queryRange(boundary);
-            for (int i = 0; i < b.size(); i++) inRange.push_back(b[i]);
-            b = m_southWest.queryRange(boundary);
-            for (int i = 0; i < b.size(); i++) inRange.push_back(b[i]);
+            for (auto& child : m_children) {
+                auto childItems = child->queryRange(boundary);
+                for (int j = 0; j < childItems.size(); j++)
+                    inRange.push_back(childItems[j]);
+            }
 
-            return inRange.ToArray();
+            return inRange;
         }
 
         std::vector<sf::FloatRect> getBoundaries() {
@@ -106,22 +100,18 @@ namespace stho {
 
             boundaries.push_back(this->m_boundary);
 
-            if (this->m_northEast == nullptr)
+            if (!m_isSubdivided)
                 return boundaries;
 
-            auto b = this->m_northEast->getBoundaries();
-            for (int i = 0; i < b.size(); i++) boundaries.push_back(b[i]);
-            b = this->m_northWest->getBoundaries();
-            for (int i = 0; i < b.size(); i++) boundaries.push_back(b[i]);
-            b = this->m_southEast->getBoundaries();
-            for (int i = 0; i < b.size(); i++) boundaries.push_back(b[i]);
-            b = this->m_southWest->getBoundaries();
-            for (int i = 0; i < b.size(); i++) boundaries.push_back(b[i]);
+            for (auto& child : m_children) {
+                auto childBoundaries = child->getBoundaries();
+
+                for (int j = 0; j < childBoundaries.size(); j++)
+                    boundaries.push_back(childBoundaries[j]);
+            }
 
             return boundaries;
         }
-
-
 
     private:
         struct DataHolder {
@@ -131,28 +121,28 @@ namespace stho {
 
         sf::FloatRect m_boundary;
         std::vector<DataHolder> m_data;
-        std::unique_ptr<QuadTree> m_northEast{nullptr};
-        std::unique_ptr<QuadTree> m_northWest{nullptr};
-        std::unique_ptr<QuadTree> m_southEast{nullptr};
-        std::unique_ptr<QuadTree> m_southWest{nullptr};
+        std::unique_ptr<QuadTree> m_children[4];
+        bool m_isSubdivided = false;
 
         void _subdivide() {
+            if (m_isSubdivided) {
+                return;
+            }
+
             const auto width = m_boundary.size.x / 2;
             const auto height = m_boundary.size.y / 2;
-            const sf::Vector2f size = {width, height};
+            const sf::Vector2f size = { width, height };
             const auto top = m_boundary.position.y;
             const auto left = m_boundary.position.x;
             const auto bottom = m_boundary.position.y + m_boundary.size.y;
             const auto right = m_boundary.position.x + m_boundary.size.x;
 
-            m_northWest = std::make_unique<QuadTree>(sf::FloatRect({left,top}, size));
-            m_northWest->boundaryCapacity = this->boundaryCapacity;
-            m_northEast = std::make_unique<QuadTree>(sf::FloatRect({right,top}, size));
-            m_northEast->boundaryCapacity = this->boundaryCapacity;
-            m_southEast = std::make_unique<QuadTree>(sf::FloatRect({right,bottom}, size));
-            m_southEast->boundaryCapacity = this->boundaryCapacity;
-            m_southWest = std::make_unique<QuadTree>(sf::FloatRect({left,bottom}, size));
-            m_southWest->boundaryCapacity = this->boundaryCapacity;
+            m_children[0] = std::make_unique<QuadTree>(sf::FloatRect({left,top}, size), this->boundaryCapacity);
+            m_children[1] = std::make_unique<QuadTree>(sf::FloatRect({right,top}, size), this->boundaryCapacity);
+            m_children[2] = std::make_unique<QuadTree>(sf::FloatRect({right,bottom}, size), this->boundaryCapacity);
+            m_children[3] = std::make_unique<QuadTree>(sf::FloatRect({left,bottom}, size), this->boundaryCapacity);
+
+            m_isSubdivided = true;
         }
     };
 }
