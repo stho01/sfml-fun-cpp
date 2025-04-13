@@ -39,10 +39,10 @@ void FlockingBehaviour::unload() {
 
 void FlockingBehaviour::update() {
     if (m_useQuadTree) {
-        m_quadTree = stho::QuadTree<Agent*>(sf::FloatRect(windowBounds()));
+        m_quadTree = stho::QuadTree<Agent*>(windowBounds());
 
-        for (int i = 0; i < m_agents.size(); i++)
-            m_quadTree.insert(m_agents[i]->pos, m_agents[i]);
+        for (const auto& m_agent : m_agents)
+            m_quadTree.insert(m_agent->pos, m_agent);
     }
 
     for (int i = 0; i < m_agents.size(); i++) {
@@ -72,11 +72,12 @@ void FlockingBehaviour::reset() {
     m_showCollider = false;
     setAgentSpeed(20.0f);
 
-    for (int i = 0; i < m_agents.size(); i++) {
-        m_agentPool->release(m_agents[i]);
+    while (!m_agents.empty()) {
+        const auto agent = m_agents.back();
+        m_agents.pop_back();
+        m_agentPool->release(agent);
     }
 
-    m_agents.clear();
     _applyRandomPositionAndDirectionToAgents();
 }
 

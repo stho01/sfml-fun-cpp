@@ -134,13 +134,13 @@ namespace stho {
             const sf::Vector2f size = { width, height };
             const auto top = m_boundary.position.y;
             const auto left = m_boundary.position.x;
-            const auto bottom = m_boundary.position.y + m_boundary.size.y;
-            const auto right = m_boundary.position.x + m_boundary.size.x;
+            const auto bottom = m_boundary.position.y + height;
+            const auto right = m_boundary.position.x + width;
 
-            m_children[0] = std::make_unique<QuadTree>(sf::FloatRect({left,top}, size), this->boundaryCapacity);
-            m_children[1] = std::make_unique<QuadTree>(sf::FloatRect({right,top}, size), this->boundaryCapacity);
-            m_children[2] = std::make_unique<QuadTree>(sf::FloatRect({right,bottom}, size), this->boundaryCapacity);
-            m_children[3] = std::make_unique<QuadTree>(sf::FloatRect({left,bottom}, size), this->boundaryCapacity);
+            m_children[0] = std::make_unique<QuadTree>(sf::FloatRect({left,top}, size), boundaryCapacity);
+            m_children[1] = std::make_unique<QuadTree>(sf::FloatRect({right,top}, size), boundaryCapacity);
+            m_children[2] = std::make_unique<QuadTree>(sf::FloatRect({right,bottom}, size), boundaryCapacity);
+            m_children[3] = std::make_unique<QuadTree>(sf::FloatRect({left,bottom}, size), boundaryCapacity);
 
             m_isSubdivided = true;
         }
