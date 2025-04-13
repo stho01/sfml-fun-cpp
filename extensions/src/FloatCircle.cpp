@@ -13,15 +13,20 @@ stho::FloatCircle::FloatCircle(const sf::Vector2f pos, const float radius)
 
 bool stho::FloatCircle::intersects(const FloatCircle& circle) const
 {
-    float c1;
-    return this->intersects(circle, c1);
+    const auto dx = circle.x - x;
+    const auto dy = circle.x - y;
+    const auto mSquared = dx * dx + dy * dy;
+    const auto r = radius + circle.radius;
+    const auto rSquared = r * r;
+
+    return mSquared <= rSquared;
 }
 
 bool stho::FloatCircle::intersects(const FloatCircle& circle, float& overlap) const {
-    const auto dx = circle.x - this->x;
-    const auto dy = circle.x - this->y;
+    const auto dx = circle.x - x;
+    const auto dy = circle.x - y;
     const auto mSquared = dx * dx + dy * dy;
-    const auto r = this->radius + circle.radius;
+    const auto r = radius + circle.radius;
     const auto rSquared = r * r;
 
     overlap = r - std::sqrt(mSquared);
@@ -30,5 +35,9 @@ bool stho::FloatCircle::intersects(const FloatCircle& circle, float& overlap) co
 }
 
 bool stho::FloatCircle::contains(const float& x, const float& y) const {
-    return this->intersects(FloatCircle(x, y));
+    return this->intersects({x, y});
+}
+
+bool stho::FloatCircle::contains(const sf::Vector2f& point) const {
+    return this->intersects({point.x, point.y});
 }

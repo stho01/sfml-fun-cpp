@@ -21,6 +21,7 @@ namespace stho {
         [[nodiscard]] bool intersects(const FloatCircle& circle) const;
         bool intersects(const FloatCircle& circle, float& intersection) const;
         [[nodiscard]] bool contains(const float& x, const float& y) const;
+        [[nodiscard]] bool contains(const sf::Vector2f& point) const;
 
         explicit operator sf::Vector2f() const {
             return {x, y};

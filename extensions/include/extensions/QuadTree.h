@@ -13,24 +13,21 @@ namespace stho {
     class QuadTree
     {
     public:
-        unsigned int boundaryCapacity = 4;
-
-        explicit QuadTree(const sf::FloatRect& boundary, const unsigned int capacity = 4)
-            : boundaryCapacity(capacity)
-            , m_boundary(boundary) { }
+        explicit QuadTree(const sf::FloatRect& boundary, const unsigned int capacity = 4, const unsigned int depth = 8)
+            : m_boundary(boundary) , m_boundaryCapacity(capacity), m_depth(depth) { }
 
         bool insert(const sf::Vector2f& vector, const T data) {
             if (!m_boundary.contains(vector)) {
                 return false;
             }
 
-            if (m_data.size() < boundaryCapacity && !m_isSubdivided) {
+            if (m_data.size() < m_boundaryCapacity) {
                 m_data.push_back({ vector, data });
                 return true;
             }
 
-            if (!m_isSubdivided) {
-                _subdivide();
+            if (m_isLeaf) {
+                return false;
             }
 
             for (auto& child : m_children) {
@@ -42,6 +39,18 @@ namespace stho {
             return false;
         }
 
+        void clear() {
+            m_data.clear();
+
+            if (m_isLeaf) {
+                return;
+            }
+
+            for (auto& child : m_children) {
+                child->clear();
+            }
+        }
+
         std::vector<T> queryRange(const FloatCircle& boundary) const {
             const sf::FloatRect rect(
                 {boundary.x - boundary.radius, boundary.x - boundary.radius},
@@ -51,13 +60,13 @@ namespace stho {
                 return std::vector<T>();
 
             std::vector<T> inRange;
-            for (int i = 0; i < m_data.size(); i++) {
-                if (auto datum = m_data[i]; boundary.contains(datum.point.x, datum.point.y)) {
+            for (const auto& datum : m_data) {
+                if (boundary.contains(datum.point)) {
                     inRange.push_back(datum.data);
                 }
             }
 
-            if (!m_isSubdivided)
+            if (m_isLeaf)
                 return inRange;
 
             for (auto& child : m_children) {
@@ -83,8 +92,9 @@ namespace stho {
                     inRange.push_back(datum.data);
             }
 
-            if (!m_isSubdivided)
+            if (m_isLeaf) {
                 return inRange;
+            }
 
             for (auto& child : m_children) {
                 auto childItems = child->queryRange(boundary);
@@ -100,7 +110,7 @@ namespace stho {
 
             boundaries.push_back(this->m_boundary);
 
-            if (!m_isSubdivided)
+            if (m_isLeaf)
                 return boundaries;
 
             for (auto& child : m_children) {
@@ -122,11 +132,14 @@ namespace stho {
         sf::FloatRect m_boundary;
         std::vector<DataHolder> m_data;
         std::unique_ptr<QuadTree> m_children[4];
-        bool m_isSubdivided = false;
+        bool m_isLeaf = true; // initially a leaf
+        unsigned int m_boundaryCapacity = 4;
+        unsigned int m_depth = 8;
 
-        void _subdivide() {
-            if (m_isSubdivided) {
-                return;
+        void _createTree() {
+
+            for (int i = 0; i < m_depth; i++) {
+
             }
 
             const auto width = m_boundary.size.x / 2;
@@ -137,12 +150,13 @@ namespace stho {
             const auto bottom = m_boundary.position.y + height;
             const auto right = m_boundary.position.x + width;
 
-            m_children[0] = std::make_unique<QuadTree>(sf::FloatRect({left,top}, size), boundaryCapacity);
-            m_children[1] = std::make_unique<QuadTree>(sf::FloatRect({right,top}, size), boundaryCapacity);
-            m_children[2] = std::make_unique<QuadTree>(sf::FloatRect({right,bottom}, size), boundaryCapacity);
-            m_children[3] = std::make_unique<QuadTree>(sf::FloatRect({left,bottom}, size), boundaryCapacity);
+            m_children[0] = std::make_unique<QuadTree>(sf::FloatRect({left,top}, size), m_boundaryCapacity);
+            m_children[1] = std::make_unique<QuadTree>(sf::FloatRect({right,top}, size), m_boundaryCapacity);
+            m_children[2] = std::make_unique<QuadTree>(sf::FloatRect({right,bottom}, size), m_boundaryCapacity);
+            m_children[3] = std::make_unique<QuadTree>(sf::FloatRect({left,bottom}, size), m_boundaryCapacity);
 
-            m_isSubdivided = true;
+            m_isLeaf = false; // no longer a leaf
+
         }
     };
 }

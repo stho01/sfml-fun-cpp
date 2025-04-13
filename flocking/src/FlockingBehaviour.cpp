@@ -11,8 +11,7 @@
 // CTOR::::
 
 FlockingBehaviour::FlockingBehaviour(sf::RenderWindow* window)
-  : GameBase(window),
-    m_quadTree(windowBounds()) {
+  : GameBase(window) {
     setClearColor(sf::Color::Black);
 }
 
@@ -20,6 +19,7 @@ FlockingBehaviour::FlockingBehaviour(sf::RenderWindow* window)
 
 void FlockingBehaviour::initialize() {
     std::cout << "Game initialized!" << std::endl;
+    this->m_quadTree = std::make_unique<stho::QuadTree<Agent*>>(windowBounds(), 8);
     this->m_agentPool = new stho::ObjectPool<Agent>();
     this->m_agentRenderer = new AgentRenderer(this, this->m_window);
     this->m_agentUpdater = new AgentUpdater(this);
@@ -39,10 +39,9 @@ void FlockingBehaviour::unload() {
 
 void FlockingBehaviour::update() {
     if (m_useQuadTree) {
-        m_quadTree = stho::QuadTree<Agent*>(windowBounds());
-
+        m_quadTree->clear();
         for (const auto& m_agent : m_agents)
-            m_quadTree.insert(m_agent->pos, m_agent);
+            m_quadTree->insert(m_agent->pos, m_agent);
     }
 
     for (int i = 0; i < m_agents.size(); i++) {
@@ -124,7 +123,7 @@ void FlockingBehaviour::spawnAgent() {
     const auto agent = m_agentPool->acquire();
     agent->pos = randomPosition;
     agent->acceleration = randomDirection.normalized();
-    agent->velocity = agent->acceleration;
+    agent->velocity = randomDirection * m_agentUpdater->maxSpeed * 0.75f;
 
     m_agents.push_back(agent);
 }

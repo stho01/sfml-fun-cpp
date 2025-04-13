@@ -50,14 +50,14 @@ public:
   void removeLastAgent();
 
 private:
-  stho::QuadTree<Agent*> m_quadTree;
+  std::unique_ptr<stho::QuadTree<Agent*>> m_quadTree{nullptr};
   std::vector<Agent*> m_agents;
   stho::ObjectPool<Agent>* m_agentPool{};
   AgentRenderer* m_agentRenderer{};
   AgentUpdater* m_agentUpdater{};
   bool m_showCollider{false};
   bool m_showNeighborhood{false};
-  bool m_renderQuadTree{true};
+  bool m_renderQuadTree{false};
   bool m_useQuadTree{true};
   int m_numberOfAgents{300};
   int m_selectedIndex{0};
