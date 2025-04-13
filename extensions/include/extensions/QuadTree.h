@@ -6,32 +6,42 @@
 
 #include <SFML/Graphics.hpp>
 #include "FloatCircle.h"
+#include "ObjectPool.h"
 
 namespace stho {
 
     template<typename T>
     class QuadTree
     {
+    private:
+        struct Node {
+            sf::Vector2f point;
+            T data;
+        };
+
     public:
-        explicit QuadTree(const sf::FloatRect& boundary, const unsigned int capacity = 4, const unsigned int depth = 8)
-            : m_boundary(boundary) , m_boundaryCapacity(capacity), m_depth(depth) { }
+        explicit QuadTree(const sf::FloatRect& boundary, const unsigned int capacity = 4)
+            : m_boundary(boundary) , m_boundaryCapacity(capacity) { }
 
         bool insert(const sf::Vector2f& vector, const T data) {
-            if (!m_boundary.contains(vector)) {
+            return insert({vector, data});
+        }
+
+        bool insert(const Node& node) {
+            if (!m_boundary.contains(node.point)) {
                 return false;
             }
 
-            if (m_data.size() < m_boundaryCapacity) {
-                m_data.push_back({ vector, data });
+            if (m_nodes.size() < m_boundaryCapacity && m_isLeaf) {
+                m_nodes.push_back(node);
                 return true;
             }
 
-            if (m_isLeaf) {
-                return false;
-            }
+            if (m_isLeaf)
+                _subdivide();
 
             for (auto& child : m_children) {
-                if (child->insert(vector, data)) {
+                if (child->insert(node)) {
                     return true;
                 }
             }
@@ -40,15 +50,17 @@ namespace stho {
         }
 
         void clear() {
-            m_data.clear();
+            m_nodes.clear();
 
             if (m_isLeaf) {
                 return;
             }
 
-            for (auto& child : m_children) {
+            for (const auto& child : m_children) {
                 child->clear();
+                m_pool.release(child);
             }
+            m_isLeaf = true;
         }
 
         std::vector<T> queryRange(const FloatCircle& boundary) const {
@@ -56,53 +68,60 @@ namespace stho {
                 {boundary.x - boundary.radius, boundary.x - boundary.radius},
                 {boundary.radius, boundary.radius});
 
-            if (!m_boundary.findIntersection(rect).has_value())
+            if (!m_boundary.findIntersection(rect).has_value()) {
+                // outside the boundary. return empty vector
                 return std::vector<T>();
-
-            std::vector<T> inRange;
-            for (const auto& datum : m_data) {
-                if (boundary.contains(datum.point)) {
-                    inRange.push_back(datum.data);
-                }
-            }
-
-            if (m_isLeaf)
-                return inRange;
-
-            for (auto& child : m_children) {
-                auto childItems = child->queryRange(boundary);
-
-                for (int j = 0; j < childItems.size(); j++) {
-                    inRange.push_back(childItems[j]);
-                }
-            }
-
-            return inRange;
-        }
-
-        std::vector<T> queryRange(const sf::FloatRect& boundary) {
-            if (!this->m_boundary.findIntersection(boundary).has_value())
-                return std::vector<T>();
-
-            std::vector<T> inRange;
-
-            for (int i = 0; i < m_data.size(); i++) {
-                const auto datum = m_data[i];
-                if (boundary.contains(datum.point))
-                    inRange.push_back(datum.data);
             }
 
             if (m_isLeaf) {
+                std::vector<T> inRange;
+                for (const auto& node : m_nodes) {
+                    if (boundary.contains(node.point)) {
+                        inRange.push_back(node.data);
+                    }
+                }
+                return inRange;
+            } else {
+                std::vector<T> inRange;
+                for (auto& child : m_children) {
+
+                    auto childResult = child->queryRange(boundary);
+                    if (!childResult.empty()) {
+                        inRange.insert(inRange.begin(), childResult.begin(), childResult.end());
+                    }
+
+                }
                 return inRange;
             }
+        }
 
-            for (auto& child : m_children) {
-                auto childItems = child->queryRange(boundary);
-                for (int j = 0; j < childItems.size(); j++)
-                    inRange.push_back(childItems[j]);
+        std::vector<T> queryRange(const sf::FloatRect& boundary) {
+            if (!this->m_boundary.findIntersection(boundary).has_value()) {
+                // outside the boundary. return empty vector
+                return std::vector<T>();
             }
 
-            return inRange;
+            if (m_isLeaf) {
+                std::vector<T> nodes;
+
+                for (int i = 0; i < m_nodes.size(); i++) {
+                    const auto datum = m_nodes[i];
+                    if (boundary.contains(datum.point))
+                        nodes.push_back(datum.data);
+                }
+
+                return nodes;
+            } else {
+                std::vector<T> nodes;
+
+                for (auto& child : m_children) {
+                    auto childNodes = child->queryRange(boundary);
+                    if (!childNodes.empty())
+                        nodes.insert(nodes.begin(), childNodes.begin(), childNodes.end());
+                }
+
+                return nodes;
+            }
         }
 
         std::vector<sf::FloatRect> getBoundaries() {
@@ -124,24 +143,15 @@ namespace stho {
         }
 
     private:
-        struct DataHolder {
-            sf::Vector2f point;
-            T data;
-        };
 
+        ObjectPool<QuadTree> m_pool;
         sf::FloatRect m_boundary;
-        std::vector<DataHolder> m_data;
-        std::unique_ptr<QuadTree> m_children[4];
+        std::vector<Node> m_nodes;
+        QuadTree* m_children[4];
         bool m_isLeaf = true; // initially a leaf
         unsigned int m_boundaryCapacity = 4;
-        unsigned int m_depth = 8;
 
-        void _createTree() {
-
-            for (int i = 0; i < m_depth; i++) {
-
-            }
-
+        void _subdivide() {
             const auto width = m_boundary.size.x / 2;
             const auto height = m_boundary.size.y / 2;
             const sf::Vector2f size = { width, height };
@@ -150,13 +160,18 @@ namespace stho {
             const auto bottom = m_boundary.position.y + height;
             const auto right = m_boundary.position.x + width;
 
-            m_children[0] = std::make_unique<QuadTree>(sf::FloatRect({left,top}, size), m_boundaryCapacity);
-            m_children[1] = std::make_unique<QuadTree>(sf::FloatRect({right,top}, size), m_boundaryCapacity);
-            m_children[2] = std::make_unique<QuadTree>(sf::FloatRect({right,bottom}, size), m_boundaryCapacity);
-            m_children[3] = std::make_unique<QuadTree>(sf::FloatRect({left,bottom}, size), m_boundaryCapacity);
+            m_children[0] = m_pool.acquire(sf::FloatRect({left,top}, size), m_boundaryCapacity);
+            m_children[1] = m_pool.acquire(sf::FloatRect({right,top}, size), m_boundaryCapacity);
+            m_children[2] = m_pool.acquire(sf::FloatRect({right,bottom}, size), m_boundaryCapacity);
+            m_children[3] = m_pool.acquire(sf::FloatRect({left,bottom}, size), m_boundaryCapacity);
 
+            for (auto& node : m_nodes) {
+                for (auto& child : m_children) {
+                    child->insert(node.point, node.data);
+                }
+            }
+            m_nodes.clear();
             m_isLeaf = false; // no longer a leaf
-
         }
     };
 }

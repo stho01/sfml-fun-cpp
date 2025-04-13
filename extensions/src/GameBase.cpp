@@ -81,7 +81,7 @@ void stho::GameBase::start() {
             }
             else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
-                if (keyPressed->scancode == sf::Keyboard::Scancode::Escape && this->m_keyPressed != nullptr) {
+                if (this->m_keyPressed) {
                     this->m_keyPressed(keyPressed->code);
                 }
             }

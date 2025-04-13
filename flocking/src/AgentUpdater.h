@@ -12,7 +12,7 @@ class FlockingBehaviour;
 class AgentUpdater {
 public:
     float alignmentAmount = 1.0f;
-    float separationAmount = 1.5f;
+    float separationAmount = 1.85f;
     float cohesionAmount = 1.0f;
     float maxSteeringForce = .95f;
     float maxSpeed = 150.0f;

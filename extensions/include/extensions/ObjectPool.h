@@ -19,14 +19,15 @@ namespace stho {
             }
         }
 
-        T* acquire() {
+        template<typename... Args>
+        T* acquire(Args &&... args) {
             T* obj = nullptr;
 
             if (!m_available.empty()) {
                 obj = m_available.back();
                 m_available.pop_back();
             } else {
-                obj = new T();
+                obj = new T(std::forward<Args>(args)...);
             }
 
             return obj;

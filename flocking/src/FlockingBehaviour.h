@@ -57,7 +57,7 @@ private:
   AgentUpdater* m_agentUpdater{};
   bool m_showCollider{false};
   bool m_showNeighborhood{false};
-  bool m_renderQuadTree{false};
+  bool m_renderQuadTree{true};
   bool m_useQuadTree{true};
   int m_numberOfAgents{300};
   int m_selectedIndex{0};
