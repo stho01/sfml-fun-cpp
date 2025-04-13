@@ -5,6 +5,12 @@
 #include "extensions/FloatCircle.h"
 #include <cmath>
 
+stho::FloatCircle::FloatCircle(const float x, const float y, const float radius)
+    : x(x), y(y), radius(radius) {}
+
+stho::FloatCircle::FloatCircle(const sf::Vector2f pos, const float radius)
+    : x(pos.x), y(pos.y), radius(radius) {}
+
 bool stho::FloatCircle::intersects(const FloatCircle& circle) const
 {
     float c1;

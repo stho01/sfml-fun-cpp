@@ -7,15 +7,66 @@
 #include "extensions/Timer.h"
 #include "extensions/Logger.h"
 
-stho::GameBase::GameBase(std::shared_ptr<sf::RenderWindow> window):
-    m_window(std::move(window)),
-    m_fpsRenderer(std::static_pointer_cast<sf::RenderTarget>(window))
+stho::GameBase::GameBase(sf::RenderWindow* window):
+    m_window(window),
+    m_fpsRenderer(static_cast<sf::RenderTarget*>(window))
 {
-    Logger::Instance().Info("Game created");
+    Logger::Info("Game created");
+}
+
+stho::GameBase::~GameBase() {
+    Logger::Info("Game destroyed");
+    delete this->m_window;
+}
+
+sf::RenderWindow* stho::GameBase::getWindow() const {
+    return m_window;
+}
+
+sf::Vector2u stho::GameBase::windowSize() const {
+    return m_window->getSize();
+}
+
+unsigned int stho::GameBase::windowWidth() const {
+    return m_window->getSize().x;
+}
+
+unsigned int stho::GameBase::windowHeight() const {
+    return m_window->getSize().y;
+}
+
+sf::Vector2<float> stho::GameBase::windowCenter() const {
+    return {
+        static_cast<float>(windowWidth()) / 2.0f,
+        static_cast<float>(windowHeight()) / 2.0f
+    };
+}
+
+sf::FloatRect stho::GameBase::windowBounds() const {
+    return {
+        {0,0},
+        {static_cast<float>(windowWidth()), static_cast<float>(windowHeight())}
+    };
+}
+
+sf::Vector2i stho::GameBase::getMousePosition() const {
+    return sf::Mouse::getPosition(*m_window);
+}
+
+void stho::GameBase::setClearColor(const sf::Color color) {
+    m_clearColor = color;
+}
+
+sf::Color stho::GameBase::getClearColor() const {
+    return m_clearColor;
+}
+
+void stho::GameBase::setKeyPressedHandler(std::function<void(sf::Keyboard::Key)> handler) {
+    m_keyPressed = std::move(handler);
 }
 
 void stho::GameBase::start() {
-    Logger::Instance().Info("Game started");
+    Logger::Info("Game started");
     while (this->m_window->isOpen())
     {
         Timer::instance().update();
@@ -45,5 +96,5 @@ void stho::GameBase::start() {
 
 void stho::GameBase::stop() const {
     this->m_window->close();
-    Logger::Instance().Info("Game stopped");
+    Logger::Info("Game stopped");
 }

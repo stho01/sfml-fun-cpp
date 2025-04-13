@@ -27,4 +27,5 @@ namespace stho {
         static sf::Vector2f normalDirection(const sf::Vector2f& p1, const sf::Vector2f& p2);
         static sf::Vector2f reflect(const sf::Vector2f& vec, const  sf::Vector2f& normal);
     };
+
 }

@@ -6,10 +6,12 @@
 
 #include <SFML/Graphics.hpp>
 #include <extensions/extensions.h>
+#include <iostream>
 
 class Game final : public stho::GameBase {
 public:
-    explicit Game(std::shared_ptr<sf::RenderWindow> window) : GameBase(window){
+    explicit Game(sf::RenderWindow* window) : GameBase(window){
+        std::cout << "Mottatt: " << (window ? "ikke null" : "null") << "\n";
         setClearColor(sf::Color::Black);
     }
 

@@ -8,12 +8,20 @@
 #include "AgentRenderer.h"
 #include "AgentUpdater.h"
 
+// CTOR::::
+
+FlockingBehaviour::FlockingBehaviour(sf::RenderWindow* window)
+  : GameBase(window),
+    m_quadTree(windowBounds()) {
+    setClearColor(sf::Color::Black);
+}
+
 // PUBLIC::::
 
 void FlockingBehaviour::initialize() {
     std::cout << "Game initialized!" << std::endl;
     this->m_agentPool = new stho::ObjectPool<Agent>();
-    this->m_agentRenderer = new AgentRenderer(this, this->m_window.get());
+    this->m_agentRenderer = new AgentRenderer(this, this->m_window);
     this->m_agentUpdater = new AgentUpdater(this);
     this->_applyRandomPositionAndDirectionToAgents();
 }

@@ -7,38 +7,36 @@
 #include <vector>
 
 namespace stho {
+    template<typename T>
+    class ObjectPool {
+    public:
 
-template<typename T>
-class ObjectPool {
-public:
-
-    ObjectPool() = default;
-    ~ObjectPool() {
-        // Slett alt
-        for (auto* obj : m_available) {
-            delete obj;
-        }
-    }
-
-    T* acquire() {
-        T* obj = nullptr;
-
-        if (!m_available.empty()) {
-            obj = m_available.back();
-            m_available.pop_back();
-        } else {
-            obj = new T();
+        ObjectPool() = default;
+        ~ObjectPool() {
+            // Slett alt
+            for (auto* obj : m_available) {
+                delete obj;
+            }
         }
 
-        return obj;
-    }
+        T* acquire() {
+            T* obj = nullptr;
 
-    void release(T* obj) {
-        m_available.push_back(obj);
-    }
+            if (!m_available.empty()) {
+                obj = m_available.back();
+                m_available.pop_back();
+            } else {
+                obj = new T();
+            }
 
-private:
-    std::vector<T*> m_available;
-};
+            return obj;
+        }
 
+        void release(T* obj) {
+            m_available.push_back(obj);
+        }
+
+    private:
+        std::vector<T*> m_available;
+    };
 }

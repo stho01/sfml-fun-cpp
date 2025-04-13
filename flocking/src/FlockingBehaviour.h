@@ -13,11 +13,8 @@ class AgentUpdater;
 class FlockingBehaviour final : public stho::GameBase {
 public:
 
-  explicit FlockingBehaviour(const std::shared_ptr<sf::RenderWindow> &window)
-    : GameBase(window),
-      m_quadTree(windowBounds()) {
-    setClearColor(sf::Color::Black);
-  }
+  explicit FlockingBehaviour(sf::RenderWindow* window);
+
 
   void initialize() override;
   void update() override;
@@ -56,9 +53,9 @@ public:
 private:
   stho::QuadTree<Agent*> m_quadTree;
   std::vector<Agent*> m_agents;
-  stho::ObjectPool<Agent>* m_agentPool;
-  AgentRenderer* m_agentRenderer;
-  AgentUpdater* m_agentUpdater;
+  stho::ObjectPool<Agent>* m_agentPool{};
+  AgentRenderer* m_agentRenderer{};
+  AgentUpdater* m_agentUpdater{};
   Agent m_selectedAgent;
   bool m_showCollider{false};
   bool m_showNeighborhood{false};

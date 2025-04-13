@@ -9,4 +9,4 @@ target_link_libraries(sample PRIVATE SFML::Graphics SFML::Audio SFML::Network ex
 copy_assets_for(sample
     ${CMAKE_SOURCE_DIR}/sample/assets
     ${CMAKE_SOURCE_DIR}/extensions/assets/extensions
-)
+)  

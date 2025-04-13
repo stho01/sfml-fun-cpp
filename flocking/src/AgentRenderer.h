@@ -10,23 +10,14 @@
 class FlockingBehaviour;
 
 struct AgentGeometry {
-    float radius;
-    sf::Vector2f origin;
+    float radius {};
+    sf::Vector2f origin {};
 };
 
 class AgentRenderer {
 public:
 
-    explicit AgentRenderer(
-      FlockingBehaviour* flockingBehaviour,
-      sf::RenderTarget* renderTarget):
-        m_flockingBehaviour(flockingBehaviour),
-        m_renderTarget(renderTarget),
-        m_ship(24.0f, 3),
-        m_collider(24.0f),
-        m_neighborhood(24.0f)
-    { }
-
+    explicit AgentRenderer(FlockingBehaviour* flockingBehaviour, sf::RenderTarget* renderTarget);
     ~AgentRenderer() = default;
 
     void render(const Agent& agent);

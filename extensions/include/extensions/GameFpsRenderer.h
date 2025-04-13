@@ -5,29 +5,23 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include "Fonts.h"
 
 namespace stho {
 
-class GameFpsRenderer {
-public:
+    class GameFpsRenderer {
+    public:
 
-    explicit GameFpsRenderer(std::shared_ptr<sf::RenderTarget> renderTarget):
-        m_fpsText(Fonts::Roboto()),
-        m_renderTarget(std::move(renderTarget)),
-        m_showFps(true)
-    { }
+        explicit GameFpsRenderer(sf::RenderTarget* renderTarget);
+        ~GameFpsRenderer() = default;
 
-    ~GameFpsRenderer() = default;
+        [[nodiscard]] bool showFps() const { return m_showFps; }
+        void setShowFps(const bool show) { m_showFps = show; }
+        void render();
 
-    [[nodiscard]] bool showFps() const { return m_showFps; }
-    void setShowFps(const bool show) { m_showFps = show; }
-    void render();
-
-private:
-    sf::Text m_fpsText;
-    std::shared_ptr<sf::RenderTarget> m_renderTarget;
-    bool m_showFps;
-};
+    private:
+        sf::Text m_fpsText;
+        sf::RenderTarget* m_renderTarget;
+        bool m_showFps;
+    };
 
 } // stho

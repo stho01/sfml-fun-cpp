@@ -17,13 +17,12 @@ namespace stho {
             return instance;
         }
 
-
         void update();
-
-        std::chrono::duration<double> getDeltaTime() const { return m_deltaTime; }
-        double getDeltaTimeSeconds() const { return m_deltaTime.count(); }
-        double getDeltaTimeMilliseconds() const { return m_deltaTime.count() * 1000.0; }
-        int fps() const { return m_fps; }
+        
+        static int fps();
+        static std::chrono::duration<double> getDeltaTime();
+        static double getDeltaTimeSeconds();
+        static double getDeltaTimeMilliseconds();
 
     private:
 
