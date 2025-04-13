@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.15)
+project(sfml_fun)
+
+set(CMAKE_CXX_STANDARD 20)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
+include(CopyAssets)
+
+add_subdirectory(extensions)
+add_subdirectory(sample)
+add_subdirectory(flocking)
