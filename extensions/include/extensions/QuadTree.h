@@ -5,6 +5,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <utility>
 #include "FloatCircle.h"
 #include "ObjectPool.h"
 
@@ -21,7 +22,10 @@ namespace stho {
 
     public:
         explicit QuadTree(const sf::FloatRect& boundary, const unsigned int capacity = 4)
-            : m_boundary(boundary) , m_boundaryCapacity(capacity) { }
+            : m_boundary(boundary), m_children{}, m_boundaryCapacity(capacity) {}
+
+        explicit QuadTree(const sf::FloatRect& boundary, const unsigned int capacity, std::string name, const int depth)
+            : m_name(std::move(name)), m_depth(depth), m_boundary(boundary), m_children{}, m_boundaryCapacity(capacity) {}
 
         bool insert(const sf::Vector2f& vector, const T data) {
             return insert({vector, data});
@@ -63,10 +67,14 @@ namespace stho {
             m_isLeaf = true;
         }
 
-        std::vector<T> queryRange(const FloatCircle& boundary) const {
-            const sf::FloatRect rect(
-                {boundary.x - boundary.radius, boundary.x - boundary.radius},
-                {boundary.radius, boundary.radius});
+        std::vector<T> queryRange(const FloatCircle& circle) const {
+            const sf::FloatRect rect({
+                    circle.x - circle.radius,
+                    circle.y - circle.radius
+                }, {
+                    circle.radius * 2,
+                    circle.radius * 2
+                });
 
             if (!m_boundary.findIntersection(rect).has_value()) {
                 // outside the boundary. return empty vector
@@ -76,7 +84,7 @@ namespace stho {
             if (m_isLeaf) {
                 std::vector<T> inRange;
                 for (const auto& node : m_nodes) {
-                    if (boundary.contains(node.point)) {
+                    if (circle.contains(node.point)) {
                         inRange.push_back(node.data);
                     }
                 }
@@ -84,12 +92,10 @@ namespace stho {
             } else {
                 std::vector<T> inRange;
                 for (auto& child : m_children) {
-
-                    auto childResult = child->queryRange(boundary);
+                    auto childResult = child->queryRange(circle);
                     if (!childResult.empty()) {
                         inRange.insert(inRange.begin(), childResult.begin(), childResult.end());
                     }
-
                 }
                 return inRange;
             }
@@ -143,7 +149,8 @@ namespace stho {
         }
 
     private:
-
+        std::string m_name;
+        int m_depth = 0;
         ObjectPool<QuadTree> m_pool;
         sf::FloatRect m_boundary;
         std::vector<Node> m_nodes;
@@ -160,16 +167,18 @@ namespace stho {
             const auto bottom = m_boundary.position.y + height;
             const auto right = m_boundary.position.x + width;
 
-            m_children[0] = m_pool.acquire(sf::FloatRect({left,top}, size), m_boundaryCapacity);
-            m_children[1] = m_pool.acquire(sf::FloatRect({right,top}, size), m_boundaryCapacity);
-            m_children[2] = m_pool.acquire(sf::FloatRect({right,bottom}, size), m_boundaryCapacity);
-            m_children[3] = m_pool.acquire(sf::FloatRect({left,bottom}, size), m_boundaryCapacity);
+            int nextDepth = m_depth + 1;
+            m_children[0] = m_pool.acquire(sf::FloatRect({left,top}, size), m_boundaryCapacity, "northwest", nextDepth);
+            m_children[1] = m_pool.acquire(sf::FloatRect({right,top}, size), m_boundaryCapacity, "northeast", nextDepth);
+            m_children[2] = m_pool.acquire(sf::FloatRect({right,bottom}, size), m_boundaryCapacity, "southeast", nextDepth);
+            m_children[3] = m_pool.acquire(sf::FloatRect({left,bottom}, size), m_boundaryCapacity, "southwest", nextDepth);
 
             for (auto& node : m_nodes) {
                 for (auto& child : m_children) {
                     child->insert(node.point, node.data);
                 }
             }
+
             m_nodes.clear();
             m_isLeaf = false; // no longer a leaf
         }

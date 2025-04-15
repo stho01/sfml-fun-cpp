@@ -23,31 +23,7 @@ void FlockingBehaviour::initialize() {
     m_agentPool = new stho::ObjectPool<Agent>();
     m_agentRenderer = new AgentRenderer(this, this->m_window);
     m_agentUpdater = new AgentUpdater(this);
-
-    float centerX = static_cast<float>(this->windowWidth()) / 2.0f;
-    float centerY = static_cast<float>(this->windowHeight()) / 2.0f;
-
-    const auto agent1 = m_agentPool->acquire();
-    agent1->pos = {centerX-10, centerY-10};
-    m_agents.push_back(agent1);
-
-    const auto agent2 = m_agentPool->acquire();
-    agent2->pos = {centerX-20, centerY-20};
-    m_agents.push_back(agent2);
-
-    const auto agent3 = m_agentPool->acquire();
-    agent3->pos = {centerX-40, centerY-40};
-    m_agents.push_back(agent3);
-
-    const auto agent4 = m_agentPool->acquire();
-    agent4->pos = {centerX-60, centerY-60};
-    m_agents.push_back(agent4);
-
-    const auto agent5 = m_agentPool->acquire();
-    agent5->pos = {centerX-80, centerY-80};
-    m_agents.push_back(agent5);
-
-    // this->_applyRandomPositionAndDirectionToAgents();
+    this->_applyRandomPositionAndDirectionToAgents();
 }
 
 void FlockingBehaviour::unload() {
@@ -70,28 +46,9 @@ void FlockingBehaviour::update() {
 
 
     for (const auto agent : m_agents) {
-        // m_agentUpdater->update(agent);
+        m_agentUpdater->update(agent);
         m_agentRenderer->render(agent);
     }
-
-    float centerX = static_cast<float>(this->windowWidth()) / 2.0f;
-    float centerY = static_cast<float>(this->windowHeight()) / 2.0f;
-
-    sf::RectangleShape rect;
-    rect.setPosition({centerX-25-80, centerY-25-80});
-    //rect.setSize({75.0f,75.0f});
-
-    rect.setSize({275.0f,275.0f});
-    rect.setFillColor(sf::Color::Transparent);
-    rect.setOutlineColor(sf::Color::Red);
-    rect.setOutlineThickness(2.0f);
-    this->m_window->draw(rect);
-
-    const sf::FloatRect test(
-        rect.getPosition(),
-        rect.getSize());
-
-    auto result = m_quadTree->queryRange(test);
 }
 
 void FlockingBehaviour::render() {

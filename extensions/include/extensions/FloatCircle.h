@@ -19,7 +19,7 @@ namespace stho {
         explicit FloatCircle(sf::Vector2f pos, float radius = 1.0f);
 
         [[nodiscard]] bool intersects(const FloatCircle& circle) const;
-        bool intersects(const FloatCircle& circle, float& intersection) const;
+        [[nodiscard]] std::optional<float> findIntersection(const FloatCircle& circle) const;
         [[nodiscard]] bool contains(const float& x, const float& y) const;
         [[nodiscard]] bool contains(const sf::Vector2f& point) const;
 

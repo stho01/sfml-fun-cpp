@@ -61,6 +61,5 @@ private:
   bool m_useQuadTree{true};
   int m_numberOfAgents{300};
   int m_selectedIndex{0};
-
   void _applyRandomPositionAndDirectionToAgents();
 };

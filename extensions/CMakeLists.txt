@@ -7,6 +7,7 @@
     src/Mathf.cpp
     src/GameFpsRenderer.cpp
     src/Logger.cpp
+        ../quadtree/src/main.cpp
 )
 
 target_include_directories(extensions PUBLIC

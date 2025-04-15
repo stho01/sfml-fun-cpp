@@ -11,27 +11,25 @@ stho::FloatCircle::FloatCircle(const float x, const float y, const float radius)
 stho::FloatCircle::FloatCircle(const sf::Vector2f pos, const float radius)
     : x(pos.x), y(pos.y), radius(radius) {}
 
-bool stho::FloatCircle::intersects(const FloatCircle& circle) const
-{
-    const auto dx = circle.x - x;
-    const auto dy = circle.x - y;
-    const auto mSquared = dx * dx + dy * dy;
-    const auto r = radius + circle.radius;
-    const auto rSquared = r * r;
+bool stho::FloatCircle::intersects(const FloatCircle& circle) const {
+    const sf::Vector2f pos1 = {circle.x, circle.y};
+    const sf::Vector2f pos2 = {x, y};
+    const auto lengthSquared = (pos2 - pos1).lengthSquared();
+    const auto rSquared = radius * radius + circle.radius * circle.radius;
 
-    return mSquared <= rSquared;
+    return lengthSquared <= rSquared;
 }
 
-bool stho::FloatCircle::intersects(const FloatCircle& circle, float& overlap) const {
-    const auto dx = circle.x - x;
-    const auto dy = circle.x - y;
-    const auto mSquared = dx * dx + dy * dy;
-    const auto r = radius + circle.radius;
-    const auto rSquared = r * r;
+std::optional<float> stho::FloatCircle::findIntersection(const FloatCircle& circle) const {
+    const sf::Vector2f pos1 = {circle.x, circle.y};
+    const sf::Vector2f pos2 = {x, y};
+    const auto lengthSquared = (pos2 - pos1).lengthSquared();
+    const auto rSquared = radius * radius + circle.radius * circle.radius;
 
-    overlap = r - std::sqrt(mSquared);
-
-    return mSquared <= rSquared;
+    if (lengthSquared <= rSquared) {
+        return std::abs(radius + circle.radius - std::sqrt(lengthSquared));
+    }
+    return std::nullopt;
 }
 
 bool stho::FloatCircle::contains(const float& x, const float& y) const {
@@ -39,5 +37,5 @@ bool stho::FloatCircle::contains(const float& x, const float& y) const {
 }
 
 bool stho::FloatCircle::contains(const sf::Vector2f& point) const {
-    return this->intersects({point.x, point.y});
+    return this->intersects({point.x, point.y, 1.0f});
 }
