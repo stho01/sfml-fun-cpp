@@ -60,7 +60,7 @@ void Game::render() {
         this->m_window->draw(shape);
     }
 
-    std::vector<stho::FloatCircle*> selected;
+    std::list<stho::FloatCircle*> selected;
 
     if (!m_circularSelectionEnabled && m_rectSelection.has_value()) {
         selected = m_quadTree->queryRange(m_rectSelection.value());

@@ -28,13 +28,16 @@ void FlockingBehaviour::initialize() {
 
 void FlockingBehaviour::unload() {
     Logger::Info("FlockingBehaviour::Game unloading");
+    for (const auto agent : m_agents) {
+        m_agentPool->release(agent);
+    }
+    m_agents.clear();
     delete m_agentRenderer;
     delete m_agentUpdater;
     delete m_agentPool;
     m_agentRenderer = nullptr;
     m_agentUpdater = nullptr;
     m_agentPool = nullptr;
-    m_agents.clear();
 }
 
 void FlockingBehaviour::update() {
@@ -43,7 +46,6 @@ void FlockingBehaviour::update() {
         for (const auto& m_agent : m_agents)
             m_quadTree->insert(m_agent->pos, m_agent);
     }
-
 
     for (const auto agent : m_agents) {
         m_agentUpdater->update(agent);

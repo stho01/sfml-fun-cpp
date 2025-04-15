@@ -17,7 +17,7 @@ namespace stho {
     void GameFpsRenderer::render() {
         if (!this->m_showFps) return;
 
-        const auto text = L"FPS: " + std::to_wstring(Timer::fps());
+        const auto text = L"FPS: " + std::to_wstring(Timer::Fps);
         this->m_fpsText.setString(text);
         this->m_fpsText.setPosition(sf::Vector2f(5.0f, 5.0f));
         this->m_fpsText.setCharacterSize(32);

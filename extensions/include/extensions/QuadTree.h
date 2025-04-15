@@ -67,66 +67,60 @@ namespace stho {
             m_isLeaf = true;
         }
 
-        std::vector<T> queryRange(const FloatCircle& circle) const {
-            const sf::FloatRect rect({
-                    circle.x - circle.radius,
-                    circle.y - circle.radius
-                }, {
-                    circle.radius * 2,
-                    circle.radius * 2
-                });
+        std::list<T> queryRange(const FloatCircle& circle) const {
+            const auto size = circle.radius * 2;
+            const sf::FloatRect rect(
+                { circle.x - circle.radius, circle.y - circle.radius},
+                { size, size });
 
-            if (!m_boundary.findIntersection(rect).has_value()) {
-                // outside the boundary. return empty vector
-                return std::vector<T>();
+            std::list<T> result;
+            queryRangeRecursive(circle, rect, result);
+            return result;
+        }
+
+        void queryRangeRecursive(const FloatCircle& circle, const sf::FloatRect& quadrant, std::list<T>& nodes) const {
+            if (!m_boundary.findIntersection(quadrant).has_value()) {
+                return;
             }
 
             if (m_isLeaf) {
-                std::vector<T> inRange;
                 for (const auto& node : m_nodes) {
                     if (circle.contains(node.point)) {
-                        inRange.push_back(node.data);
+                        nodes.push_back(node.data);
                     }
                 }
-                return inRange;
             } else {
-                std::vector<T> inRange;
                 for (auto& child : m_children) {
-                    auto childResult = child->queryRange(circle);
-                    if (!childResult.empty()) {
-                        inRange.insert(inRange.begin(), childResult.begin(), childResult.end());
-                    }
+                    child->queryRangeRecursive(circle, quadrant, nodes);
                 }
-                return inRange;
             }
         }
 
-        std::vector<T> queryRange(const sf::FloatRect& boundary) {
+        std::list<T> queryRange(const sf::FloatRect& boundary) const {
+            std::list<T> nodes;
+            queryRangeRecursive(boundary, nodes);
+            return nodes;
+        }
+
+        void queryRangeRecursive(const sf::FloatRect& boundary, std::list<T>& nodes) const {
             if (!this->m_boundary.findIntersection(boundary).has_value()) {
-                // outside the boundary. return empty vector
-                return std::vector<T>();
+                return;
             }
 
             if (m_isLeaf) {
-                std::vector<T> nodes;
 
                 for (int i = 0; i < m_nodes.size(); i++) {
                     const auto datum = m_nodes[i];
-                    if (boundary.contains(datum.point))
+
+                    if (boundary.contains(datum.point)) {
                         nodes.push_back(datum.data);
+                    }
                 }
 
-                return nodes;
             } else {
-                std::vector<T> nodes;
-
                 for (auto& child : m_children) {
-                    auto childNodes = child->queryRange(boundary);
-                    if (!childNodes.empty())
-                        nodes.insert(nodes.begin(), childNodes.begin(), childNodes.end());
+                    child->queryRangeRecursive(boundary, nodes);
                 }
-
-                return nodes;
             }
         }
 
@@ -140,7 +134,6 @@ namespace stho {
 
             for (auto& child : m_children) {
                 auto childBoundaries = child->getBoundaries();
-
                 for (int j = 0; j < childBoundaries.size(); j++)
                     boundaries.push_back(childBoundaries[j]);
             }

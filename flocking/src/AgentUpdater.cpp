@@ -10,7 +10,7 @@ void AgentUpdater::update(Agent* agent)
 {
     agent->acceleration = this->flock(agent);
     agent->velocity = this->limitMagnitude(agent->acceleration + agent->velocity, maxSpeed);
-    agent->pos += agent->velocity * static_cast<float>(stho::Timer::getDeltaTimeSeconds());
+    agent->pos += agent->velocity * stho::Timer::deltaTimeSeconds();
     this->wraparound(agent);
 }
 
