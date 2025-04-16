@@ -10,6 +10,11 @@
 class FlockingBehaviour;
 
 class AgentUpdater {
+struct Diagnostic {
+    double flockingDt{0};
+    double updateDt{0};
+} _diagnostic;
+
 public:
     float alignmentAmount = 1.0f;
     float separationAmount = 1.5f;
@@ -17,8 +22,7 @@ public:
     float maxSteeringForce = .95f;
     float maxSpeed = 150.0f;
 
-    explicit AgentUpdater(FlockingBehaviour* flockingBehaviour):
-        m_flockingBehaviour(flockingBehaviour) {}
+    explicit AgentUpdater(FlockingBehaviour* flockingBehaviour);
 
     void update(Agent* agent);
     sf::Vector2f flock(const Agent* agent);

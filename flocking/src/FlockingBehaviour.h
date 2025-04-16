@@ -10,11 +10,19 @@
 class AgentRenderer;
 class AgentUpdater;
 
+
+
 class FlockingBehaviour final : public stho::GameBase {
+  struct Diagnostics {
+    double updateElapsed {0};
+    double quadTreeUpdateElapsed {0};
+    double agentUpdateElapsed {0};
+    double getNeighborhoodElapsed{0};
+  } diagnostics;
+
 public:
 
   explicit FlockingBehaviour(sf::RenderWindow* window);
-
 
   void initialize() override;
   void update() override;
@@ -44,7 +52,7 @@ public:
   float getAgentSpeed() const;
   void setAgentSpeed(float speed) const;
 
-  std::vector<Agent*> getNeighbors(const Agent* agent) const;
+  std::list<Agent*> getNeighbors(const Agent* agent);
 
   void spawnAgent();
   void removeLastAgent();

@@ -15,6 +15,11 @@ struct AgentGeometry {
 };
 
 class AgentRenderer {
+struct Diagnostic {
+    double renderDt{0};
+    double drawDt{0};
+} _diagnostic;
+
 public:
 
     explicit AgentRenderer(FlockingBehaviour* flockingBehaviour, sf::RenderTarget* renderTarget);

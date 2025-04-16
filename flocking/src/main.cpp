@@ -5,7 +5,6 @@
 
 int main() {
     const auto window = stho::WindowFactory::CreateDefault();
-    window->setFramerateLimit(500);
     FlockingBehaviour game(window);
     game.initialize();
 

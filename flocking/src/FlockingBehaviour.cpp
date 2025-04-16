@@ -24,6 +24,14 @@ void FlockingBehaviour::initialize() {
     m_agentRenderer = new AgentRenderer(this, this->m_window);
     m_agentUpdater = new AgentUpdater(this);
     this->_applyRandomPositionAndDirectionToAgents();
+
+    stho::Timer::setInterval(1000, [&] {
+        Logger::Info("[FlockingBehaviour]: diag.updateElapsed {} ms, diag.quadTreeUpdateElapsed: {} ms, diag.agentUpdateElapsed: {} ms, getNeighborhoodElapsed: {} ms",
+            diagnostics.updateElapsed * 1000,
+            diagnostics.quadTreeUpdateElapsed * 1000,
+            diagnostics.agentUpdateElapsed * 1000,
+            diagnostics.getNeighborhoodElapsed * 1000);
+    });
 }
 
 void FlockingBehaviour::unload() {
@@ -41,16 +49,22 @@ void FlockingBehaviour::unload() {
 }
 
 void FlockingBehaviour::update() {
+    const auto startTs = stho::Timer::getTimestamp();
     if (m_useQuadTree) {
         m_quadTree->clear();
         for (const auto& m_agent : m_agents)
             m_quadTree->insert(m_agent->pos, m_agent);
     }
+    diagnostics.quadTreeUpdateElapsed = stho::Timer::getElapsed(startTs);
 
+    const auto agentUpdateTimestamp = stho::Timer::getTimestamp();
     for (const auto agent : m_agents) {
         m_agentUpdater->update(agent);
         m_agentRenderer->render(agent);
     }
+    diagnostics.agentUpdateElapsed = stho::Timer::getElapsed(agentUpdateTimestamp);
+
+    diagnostics.updateElapsed = stho::Timer::getElapsed(startTs);
 }
 
 void FlockingBehaviour::render() {
@@ -89,20 +103,21 @@ float FlockingBehaviour::getAgentSpeed() const {
     return m_agentUpdater->maxSpeed;
 }
 
-std::vector<Agent*> FlockingBehaviour::getNeighbors(const Agent* agent) const {
+std::list<Agent*> FlockingBehaviour::getNeighbors(const Agent* agent) {
+    auto ts = stho::Timer::getTimestamp();
+    std::list<Agent*> neighbors;
+
     if (m_useQuadTree) {
         const stho::FloatCircle neighborhood(agent->pos, agent->neighborhoodRadius);
         const auto potentialNeighbor = m_quadTree->queryRange(neighborhood);
 
-        std::vector<Agent*> neighbors;
         for (auto i : potentialNeighbor) {
             if (i != agent) {
                 neighbors.push_back(i);
             }
         }
-        return neighbors;
+
     } else {
-        std::vector<Agent*> neighbors;
         for (auto potentialNeighbor : m_agents) {
             if (potentialNeighbor == agent)
                 continue;
@@ -113,8 +128,10 @@ std::vector<Agent*> FlockingBehaviour::getNeighbors(const Agent* agent) const {
 
             neighbors.push_back(potentialNeighbor);
         }
-        return neighbors;
     }
+
+    diagnostics.getNeighborhoodElapsed = stho::Timer::getElapsed(ts);
+    return neighbors;
 }
 
 void FlockingBehaviour::spawnAgent() {

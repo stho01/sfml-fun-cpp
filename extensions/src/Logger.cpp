@@ -30,7 +30,13 @@ ConsoleColor Logger::LEVEL_COLOR[] = {
     ConsoleColor::CC_AQUA,
     ConsoleColor::CC_DARK_WHITE
 };
-std::vector<LogEntry> Logger::logMessages;
+
+// std::queue<LogEntry> Logger::logMessages;
+// std::thread Logger::logThread;
+// std::mutex Logger::logMutex;
+// std::condition_variable Logger::logCondition;
+// std::atomic<bool> Logger::loggerRunning{false};
+
 
 LogLevel Logger::minLogLevel = LOG_INFO;
 
@@ -45,21 +51,66 @@ Logger::Logger() {
     }
 }
 
+Logger::~Logger() {
+    Stop();
+}
+
+
 
 // ===========================================================
 // = Implementation:
 // ===========================================================
+
+void Logger::Start() {
+    loggerRunning = true;
+    logThread = std::thread(&Logger::Run, this);
+}
+
+void Logger::Stop() {
+    {
+        std::lock_guard lock(logMutex);
+        loggerRunning = false;
+    }
+
+    logCondition.notify_all();
+    if (logThread.joinable()) {
+        logThread.join();
+    }
+}
 
 void Logger::Log(const LogLevel& level, const string& msg) {
     if (level > minLogLevel) {
         return;
     }
 
-    logMessages.push_back({level, msg});
+    {
+        std::lock_guard lock(logMutex);
+        logMessages.push({level, msg});
+    }
+    logCondition.notify_one();
 
-    SetColor(LEVEL_COLOR[level]);
-    cout << "[" << TimeStamp() << "] " << LEVEL_NAME[level] << ": " << msg << endl;
-    ResetColor();
+    // SetColor(LEVEL_COLOR[level]);
+    // cout << "[" << TimeStamp() << "] " << LEVEL_NAME[level] << ": " << msg << endl;
+    // ResetColor();
+}
+
+void Logger::Run() {
+    while (loggerRunning || !logMessages.empty()) {
+        std::unique_lock lock(logMutex);
+        logCondition.wait(lock, [this] { return !logMessages.empty() || !loggerRunning; });
+
+        while (!logMessages.empty()) {
+            LogEntry entry = logMessages.front();
+            logMessages.pop();
+            lock.unlock(); // Unlock the mutex before logging
+
+            SetColor(LEVEL_COLOR[entry.level]);
+            cout << "[" << TimeStamp() << "] " << LEVEL_NAME[entry.level] << ": " << entry.message << endl;
+            ResetColor();
+
+            lock.lock();
+        }
+    }
 }
 
 // ===========================================================
@@ -102,3 +153,4 @@ void Logger::ResetColor() {
 void Logger::SetMinimumLogLevel(const LogLevel& logLevel) {
     minLogLevel = logLevel;
 }
+

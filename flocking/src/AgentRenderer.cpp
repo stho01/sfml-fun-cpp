@@ -15,12 +15,19 @@ AgentRenderer::AgentRenderer(
         m_renderTarget(renderTarget),
         m_ship(24.0f, 3),
         m_collider(24.0f),
-        m_neighborhood(24.0f)
-{ }
+        m_neighborhood(24.0f) {
+
+    stho::Timer::setInterval(1000, [&] {
+        Logger::Info("[AgentRenderer]: renderDt: {} ms, drawDt: {} ms",
+            this->_diagnostic.renderDt * 1000,
+            this->_diagnostic.drawDt * 1000);
+    });
+}
 
 // PUBLIC:::
 
 void AgentRenderer::render(const Agent* agent) {
+    const auto timestamp = stho::Timer::getTimestamp();
     const auto geometry = this->_getGeometry(agent);
 
     if (this->m_flockingBehaviour->getShowCollider())
@@ -31,6 +38,7 @@ void AgentRenderer::render(const Agent* agent) {
         this->drawNeighborhoodAreas(agent, geometry);
 
     this->_drawAgent(agent, geometry);
+    this->_diagnostic.renderDt = stho::Timer::getElapsed(timestamp);
 }
 
 void AgentRenderer::drawCollider(const Agent* agent, const AgentGeometry& geometry) {
@@ -60,10 +68,11 @@ void AgentRenderer::drawNeighborhoodAreas(const Agent* agent, const AgentGeometr
 }
 
 void AgentRenderer::_drawAgent(const Agent* agent, const AgentGeometry& geometry) {
+    const auto timestamp = stho::Timer::getTimestamp();
+
     this->m_ship.setRadius(geometry.radius);
     this->m_ship.setPosition(agent->pos);
     this->m_ship.setScale({0.75f,1.0f});
-
     this->m_ship.setRotation(stho::Mathf::ToPolarCoordinates(agent->velocity).getAngle());
     this->m_ship.setOrigin(geometry.origin);
 
@@ -75,6 +84,8 @@ void AgentRenderer::_drawAgent(const Agent* agent, const AgentGeometry& geometry
 
     this->m_ship.setFillColor(color);
     this->m_renderTarget->draw(this->m_ship);
+
+    this->_diagnostic.drawDt = stho::Timer::getElapsed(timestamp);
 }
 
 AgentGeometry AgentRenderer::_getGeometry(const Agent* agent) const {

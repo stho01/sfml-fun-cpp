@@ -3,6 +3,11 @@
 #include <string>
 #include <windows.h>
 #include <vector>
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <atomic>
 
 enum LogLevel {
     LOG_ERROR = 0,
@@ -43,7 +48,7 @@ private:
     static LogLevel minLogLevel;
 
 public:
-    static Logger Instance() {
+    static Logger& Instance() {
         static Logger l;
 
         return l;
@@ -58,14 +63,54 @@ public:
     static void Info(const std::string& msg);
     static void Debug(const std::string& msg);
 
+    template <typename... Types>
+    static void Log(const LogLevel& level, const std::format_string<Types...>& format, Types&&... args) {
+        Instance().Log(level, std::format(format, std::forward<Types>(args)...));
+    }
+
+    template <typename... Types>
+    static void Error(const std::format_string<Types...>& format, Types&&... args) {
+        Instance().Log(LOG_ERROR, format, std::forward<Types>(args)...);
+    }
+
+    template <typename... Types>
+    static void Warn(const std::format_string<Types...>& format, Types&&... args) {
+        Instance().Log(LOG_WARNING, format, std::forward<Types>(args)...);
+    }
+
+    template <typename... Types>
+    static void Critical(const std::format_string<Types...>& format, Types&&... args) {
+        Instance().Log(LOG_CRITICAL, format, std::forward<Types>(args)...);
+    }
+
+    template <typename... Types>
+    static void Info(const std::format_string<Types...>& format, Types&&... args) {
+        Instance().Log(LOG_INFO, format, std::forward<Types>(args)...);
+    }
+
+    template <typename... Types>
+    static void Debug(const std::format_string<Types...>& format, Types&&... args) {
+        Instance().Log(LOG_DEBUG, format, std::forward<Types>(args)...);
+    }
+
+
+    void Start();
+    void Stop();
+
+
 private:
     Logger();
-    static void SetColor(const ConsoleColor& fg, const ConsoleColor& bg = ConsoleColor::CC_BLACK);
+    ~Logger();
+    static void SetColor(const ConsoleColor& fg, const ConsoleColor& bg = CC_BLACK);
     static void ResetColor();
+    void Run();
 
 private:
     static std::string TimeStamp();
     static HANDLE outHandle;
-    static std::vector<LogEntry> logMessages;
-
+    std::queue<LogEntry> logMessages;
+    std::thread logThread;
+    std::mutex logMutex;
+    std::condition_variable logCondition;
+    std::atomic<bool> loggerRunning;
 };

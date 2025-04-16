@@ -6,15 +6,32 @@
 #include <extensions/extensions.h>
 #include "FlockingBehaviour.h"
 
+AgentUpdater::AgentUpdater(FlockingBehaviour* flockingBehaviour):
+    m_flockingBehaviour(flockingBehaviour) {
+    stho::Timer::setInterval(1000, [&] {
+        Logger::Info("[AgentUpdater]: updateDt: {} ms, updateDtAll: {} ms, flockingDt: {} ms, flockingDtAll: {} ms",
+            this->_diagnostic.updateDt * 1000,
+            this->_diagnostic.updateDt * 300 * 1000,
+            this->_diagnostic.flockingDt * 1000,
+            this->_diagnostic.flockingDt * 300 * 1000);
+    });
+
+}
+
 void AgentUpdater::update(Agent* agent)
 {
+    const auto timestamp = stho::Timer::getTimestamp();
+
     agent->acceleration = this->flock(agent);
     agent->velocity = this->limitMagnitude(agent->acceleration + agent->velocity, maxSpeed);
     agent->pos += agent->velocity * stho::Timer::deltaTimeSeconds();
     this->wraparound(agent);
+
+    _diagnostic.updateDt = stho::Timer::getElapsed(timestamp);
 }
 
 sf::Vector2f AgentUpdater::flock(const Agent* agent) {
+    const auto timestamp = stho::Timer::getTimestamp();
     const auto neighbors = this->m_flockingBehaviour->getNeighbors(agent);
 
     if (neighbors.empty())
@@ -41,10 +58,14 @@ sf::Vector2f AgentUpdater::flock(const Agent* agent) {
     cohesion = this->steer(agent, ((cohesion / static_cast<float>(neighbors.size())) - agent->pos).normalized() * maxSpeed);
     separation = separationCount == 0 ? separation : this->steer(agent, (separation / static_cast<float>(separationCount)).normalized() * maxSpeed);
 
-    return
+    const auto result =
         alignment * alignmentAmount
         + cohesion * cohesionAmount
         + separation * separationAmount;
+
+    _diagnostic.flockingDt = stho::Timer::getElapsed(timestamp);
+
+    return result;
 }
 
 void AgentUpdater::wraparound(Agent* agent) const {
