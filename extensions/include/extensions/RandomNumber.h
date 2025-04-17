@@ -19,6 +19,13 @@ namespace stho {
             return dis(gen);
         }
 
+        static float nextFloat(const float min, const float max) {
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_real_distribution<float> dis(min, max);
+            return dis(gen);
+        }
+
         static sf::Vector2f vector2fAndReflect(const int xMin, const int xMax, const int yMin, const int yMax) {
             if (xMin <= 0 || xMax <= 0 || yMin <= 0 || yMax <= 0)
                 throw "Arguments must be greater that zero";

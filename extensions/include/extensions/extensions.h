@@ -17,3 +17,4 @@
 #include "RandomNumber.h"
 #include "ObjectPool.h"
 #include "Logger.h"
+#include "LineShape.h"
