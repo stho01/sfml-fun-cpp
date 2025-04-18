@@ -26,6 +26,8 @@ namespace stho {
         void setClearColor(sf::Color color);
         [[nodiscard]] sf::Color getClearColor() const;
         void setKeyPressedHandler(std::function<void(sf::Keyboard::Key)> handler);
+        void setMouseButtonPressedHandler(std::function<void(sf::Mouse::Button)> handler);
+        void setWindowResizeHandler(std::function<void(sf::Vector2u)> handler);
 
     protected:
         sf::RenderWindow* m_window{ nullptr };
@@ -36,10 +38,11 @@ namespace stho {
         virtual void unload() = 0;
 
     private:
-
         sf::Color m_clearColor{ sf::Color::Black };
         GameFpsRenderer m_fpsRenderer;
         std::function<void(sf::Keyboard::Key)> m_keyPressed;
+        std::function<void(sf::Mouse::Button)> m_mouseButtonPressed;
+        std::function<void(sf::Vector2u)> m_resizeHandler;
 
     };
 }

@@ -66,24 +66,39 @@ void stho::GameBase::setKeyPressedHandler(std::function<void(sf::Keyboard::Key)>
     m_keyPressed = std::move(handler);
 }
 
+void stho::GameBase::setMouseButtonPressedHandler(std::function<void(sf::Mouse::Button)> handler) {
+    m_mouseButtonPressed = std::move(handler);
+}
+
+void stho::GameBase::setWindowResizeHandler(std::function<void(sf::Vector2u)> handler) {
+    m_resizeHandler = std::move(handler);
+}
+
 void stho::GameBase::start() {
     Logger::Info("Game started");
 
     Timer::update(); // reset timers after initialization
 
-    while (this->m_window->isOpen())
-    {
+    while (this->m_window->isOpen()) {
         Timer::update();
 
-        while (const std::optional event = this->m_window->pollEvent())
-        {
+        while (const std::optional event = this->m_window->pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
                 this->m_window->close();
             }
-            else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-            {
+            else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                 if (this->m_keyPressed) {
                     this->m_keyPressed(keyPressed->code);
+                }
+            }
+            else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>()) {
+                if (this->m_mouseButtonPressed) {
+                    this->m_mouseButtonPressed(mouseButtonPressed->button);
+                }
+            }
+            else if (const auto* resizeEvent = event->getIf<sf::Event::Resized>()) {
+                if (this->m_resizeHandler) {
+                    this->m_resizeHandler(resizeEvent->size);
                 }
             }
         }
