@@ -16,6 +16,14 @@ namespace stho {
         constexpr static sf::Vector2f LEFT  {-1,0};
         constexpr static sf::Vector2f UP {1,-1};
         constexpr static sf::Vector2f DOWN {1,1};
+
+        static sf::Vector2f multiply(const sf::Vector2f& lhs, const sf::Vector2f& rhs);
+        static sf::Vector2f multiply(const sf::Vector2i& lhs, const sf::Vector2f& rhs);
+        static sf::Vector2f multiply(const sf::Vector2f& lhs, const sf::Vector2i& rhs);
+
+        static sf::Vector2f divide(const sf::Vector2f& lhs, const sf::Vector2f& rhs);
+        static sf::Vector2f divide(const sf::Vector2i& lhs, const sf::Vector2f& rhs);
+        static sf::Vector2f divide(const sf::Vector2f& lhs, const sf::Vector2i& rhs);
     };
 
     class Mathf {

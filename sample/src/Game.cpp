@@ -5,6 +5,11 @@
 #include <iostream>
 #include "Game.h"
 
+Game::Game(sf::RenderWindow* window) : GameBase(window){
+    std::cout << "Mottatt: " << (window ? "ikke null" : "null") << "\n";
+    setClearColor(sf::Color::Black);
+}
+
 void Game::initialize() {
     m_texture = std::make_shared<sf::Texture>("assets/texture.png");
 

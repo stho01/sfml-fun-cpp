@@ -8,6 +8,7 @@
     src/GameFpsRenderer.cpp
     src/Logger.cpp
     src/LineShape.cpp
+    src/String.cpp
 )
 
 target_include_directories(extensions PUBLIC

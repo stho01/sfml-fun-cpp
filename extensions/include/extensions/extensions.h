@@ -18,3 +18,4 @@
 #include "ObjectPool.h"
 #include "Logger.h"
 #include "LineShape.h"
+#include "String.h"

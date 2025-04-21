@@ -103,7 +103,7 @@ void stho::GameBase::start() {
             }
         }
 
-        this->m_window->clear();
+        this->m_window->clear(m_clearColor);
         update();
         render();
         this->m_fpsRenderer.render();

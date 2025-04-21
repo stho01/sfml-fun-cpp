@@ -4,12 +4,16 @@
 
 #pragma once
 
-#include <SFML/Graphics.hpp>
 #include <extensions/extensions.h>
+#include "Board.h"
+#include "PieceRenderer.h"
+
+class BoardRenderer;
 
 class Game final : public stho::GameBase {
 public:
     explicit Game(sf::RenderWindow* window);
+    ~Game() override;
 
     void initialize() override;
     void update() override;
@@ -17,7 +21,10 @@ public:
     void unload() override;
 
 private:
-    std::shared_ptr<sf::Texture> m_texture{nullptr};
-    std::shared_ptr<sf::Sprite> m_sprite1{nullptr};
-    std::shared_ptr<sf::Sprite> m_sprite2{nullptr};
+    BoardRenderer* _boardRenderer;
+    PieceRenderer* _pieceRenderer;
+    SpriteAtlas _spriteAtlas;
+    Board _board;
+
+    void _setupGame();
 };
