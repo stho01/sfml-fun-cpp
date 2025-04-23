@@ -9,6 +9,7 @@
 #include "PieceRenderer.h"
 
 class BoardRenderer;
+class MoveController;
 
 class Game final : public stho::GameBase {
 public:
@@ -20,9 +21,12 @@ public:
     void render() override;
     void unload() override;
 
+    Board& getBoard() { return _board; }
+
 private:
     BoardRenderer* _boardRenderer;
     PieceRenderer* _pieceRenderer;
+    std::unique_ptr<MoveController> _moveController{nullptr};
     SpriteAtlas _spriteAtlas;
     Board _board;
 

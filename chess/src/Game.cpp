@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Game.h"
 #include "BoardRenderer.h"
+#include "MoveController.h"
 
 Game::Game(sf::RenderWindow* window)
     : GameBase(window)
@@ -27,6 +28,8 @@ void Game::initialize() {
 
     _pieceRenderer = new PieceRenderer(*getWindow(), _spriteAtlas);
     _pieceRenderer->initialize();
+
+    _moveController = std::make_unique<MoveController>(*this);
 
     _board.setSize({
         windowWidth() * 0.8f,

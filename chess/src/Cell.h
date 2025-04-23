@@ -17,6 +17,10 @@ public:
             _piece->setPosition(_position);
     }
 
+    bool isEmpty() const {
+        return _piece == nullptr;
+    }
+
     const std::shared_ptr<Piece>& getPiece() const {
         return _piece;
     }
