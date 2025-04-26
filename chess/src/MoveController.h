@@ -24,12 +24,12 @@ private:
     Cell* _selectedCell{nullptr};
     std::optional<std::list<Cell*>> _eligibleCells{std::nullopt};
 
-    const std::list<Cell&>& _getEligibleCells(const Piece& piece);
-    void _addPawnMoves(const Piece& piece, std::list<Cell&>& cells);
-    void _addBishopMoves(const Piece& piece, std::list<Cell&>& cells);
-    void _addRookMoves(const Piece& piece, std::list<Cell&>& cells);
-    void _addKnightMoves(const Piece& piece, std::list<Cell&>& cells);
-    void _addQueenMoves(const Piece& piece, std::list<Cell&>& cells);
-    void _addKingMoves(const Piece& piece, std::list<Cell&>& cells);
-    void _getCellsInDirection(const Piece& piece, const sf::Vector2i& direction);
+    std::list<Cell*>& _getEligibleCells(const Piece& piece);
+    void _addPawnMoves(const Piece& piece, std::list<Cell*>& cells);
+    void _addBishopMoves(const Piece& piece, std::list<Cell*>& cells);
+    void _addRookMoves(const Piece& piece, std::list<Cell*>& cells);
+    void _addKnightMoves(const Piece& piece, std::list<Cell*>& cells);
+    void _addQueenMoves(const Piece& piece, std::list<Cell*>& cells);
+    void _addKingMoves(const Piece& piece, std::list<Cell*>& cells);
+    void _getCellsInDirection(const Piece& piece, const sf::Vector2i& direction, std::list<Cell*>& cells);
 };

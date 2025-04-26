@@ -30,16 +30,16 @@ public:
     bool tryGetCell(const sf::Vector2i& position, Cell*& cell);
     bool tryGetEnemyCell(const sf::Vector2i& position, const PieceColor& color, Cell*& cell);
     bool placePiece(int x, int y, const std::shared_ptr<Piece>& piece);
-    sf::IntRect getBoundingBox(int index) const;
+    [[nodiscard]] sf::IntRect getBoundingBox(int index) const;
     void clear();
     bool movePiece(Cell& sourceCell, Cell& targetCell);
-    sf::Vector2i positionFromScreenCoords(const sf::Vector2i& position) const;
-    sf::Vector2i positionToScreenCoords(const sf::Vector2i& boardPosition) const;
-
+    [[nodiscard]] sf::Vector2i positionFromScreenCoords(const sf::Vector2i& position) const;
+    [[nodiscard]] sf::Vector2i positionToScreenCoords(const sf::Vector2i& boardPosition) const;
 
 private:
     std::array<Cell, CELL_COUNT> _cells{};
     sf::Vector2f _position{0,0};
     sf::Vector2f _size{600,600};
-    bool _inRange(int value) const;
+
+    [[nodiscard]] bool _inRange(int value) const;
 };
