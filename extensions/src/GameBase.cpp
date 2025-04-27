@@ -16,7 +16,7 @@ stho::GameBase::GameBase(sf::RenderWindow* window):
 }
 
 stho::GameBase::~GameBase() {
-    Logger::Info("Game destroyed");
+    Logger::Info("GameBase destroyed");
     delete this->m_window;
 }
 

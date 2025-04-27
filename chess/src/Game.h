@@ -27,8 +27,8 @@ public:
     const PieceColor& getCurrentPlayer() const { return _currentPlayer; }
 
 private:
-    BoardRenderer* _boardRenderer;
-    PieceRenderer* _pieceRenderer;
+    std::unique_ptr<BoardRenderer> _boardRenderer;
+    std::unique_ptr<PieceRenderer> _pieceRenderer;
     std::unique_ptr<MoveController> _moveController{nullptr};
     std::unique_ptr<MoveRenderer> _moveRenderer{nullptr};
     std::unique_ptr<NamePlateRenderer> _namePlateRenderer{nullptr};

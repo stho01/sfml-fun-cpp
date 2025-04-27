@@ -2,10 +2,10 @@
 // Created by stenm on 21.04.2025.
 //
 
-#include <nlohmann/json.hpp>
 #include "SpriteAtlas.h"
-#include <extensions/extensions.h>
 #include <fstream>
+#include <extensions/extensions.h>
+#include <nlohmann/json.hpp>
 #include "Json.h"
 
 void SpriteAtlas::load(const std::string& atlasDefinition) {

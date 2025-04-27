@@ -16,7 +16,7 @@ Game::Game(sf::RenderWindow* window)
 }
 
 Game::~Game() {
-    delete _boardRenderer;
+    Logger::Info("Game destroyed");
 }
 
 void Game::initialize() {
@@ -25,10 +25,10 @@ void Game::initialize() {
     _spriteAtlas.load("assets/chess2.atlas.json");
 
     setClearColor(sf::Color(0x21100EFF));
-    _boardRenderer = new BoardRenderer(*this, *getWindow());
+    _boardRenderer = std::make_unique<BoardRenderer>(*this, *getWindow());
     _boardRenderer->initialize();
 
-    _pieceRenderer = new PieceRenderer(*getWindow(), _spriteAtlas);
+    _pieceRenderer = std::make_unique<PieceRenderer>(*getWindow(), _spriteAtlas);
     _pieceRenderer->initialize();
 
     _moveController = std::make_unique<MoveController>(*this);
