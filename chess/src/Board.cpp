@@ -8,9 +8,13 @@ Board::Board() {
   for (auto x = 0; x < MAX_TILE_COUNT; x++) {
     for (auto y = 0; y < MAX_TILE_COUNT; y++) {
       const auto i = y * MAX_TILE_COUNT + x;
-      _cells[i] = Cell(x, y);
+      _cells[i].setPosition(x, y);
     }
   }
+}
+
+Board::~Board() {
+  Logger::Info("Destroying Board");
 }
 
 void Board::setup() {

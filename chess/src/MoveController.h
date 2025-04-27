@@ -11,7 +11,7 @@ class Game;
 class MoveController {
 public:
     explicit MoveController(Game& game);
-    ~MoveController() = default;
+    ~MoveController();
     Cell* getSelectedCell() const;
     Piece* getSelectedPiece() const;
     std::optional<PieceColor> getSelectedPieceColor() const;

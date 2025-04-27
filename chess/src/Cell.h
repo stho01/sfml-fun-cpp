@@ -4,11 +4,16 @@
 
 #pragma once
 
+#include <extensions/extensions.h>
 #include "Piece.h"
 
 class Cell {
 public:
     Cell() = default;
+    ~Cell() {
+        Logger::Info("Destroying Cell");
+    }
+
     Cell(int x, int y) : _position({x,y}) { }
 
     void setPiece(Piece* piece) {
@@ -36,6 +41,10 @@ public:
 
     sf::Vector2i getPosition() const {
         return _position;
+    }
+
+    void setPosition(int x, int y) {
+        _position = {x,y};
     }
 
     std::string toString() const {

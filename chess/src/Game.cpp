@@ -7,6 +7,7 @@
 #include "BoardRenderer.h"
 #include "MoveController.h"
 #include "MoveRenderer.h"
+#include "NamePlateRenderer.h"
 
 Game::Game(sf::RenderWindow* window)
     : GameBase(window)
@@ -32,10 +33,11 @@ void Game::initialize() {
 
     _moveController = std::make_unique<MoveController>(*this);
     _moveRenderer = std::make_unique<MoveRenderer>(*getWindow(), *this);
+    _namePlateRenderer = std::make_unique<NamePlateRenderer>(*getWindow(), *this);
 
     _board.setSize({
-        windowWidth() * 0.8f,
-        windowHeight() * 0.8f
+        static_cast<float>(windowWidth()) * 0.8f,
+        static_cast<float>(windowHeight()) * 0.8f
     });
     _board.setPosition(windowCenter() - _board.getSize() / 2.f);
 
@@ -68,6 +70,7 @@ void Game::update() {
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
         _board.setup();
+        _currentPlayer = White;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
         _moveController->deselectCell();
@@ -83,6 +86,8 @@ void Game::render() {
             _pieceRenderer->render(_board, *piece);
         }
     }
+
+    _namePlateRenderer->render();
 }
 
 void Game::unload() {

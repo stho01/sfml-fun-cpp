@@ -9,6 +9,11 @@
 MoveController::MoveController(Game& game)
     : _game(game) {}
 
+MoveController::~MoveController() {
+    Logger::Info("MoveController destroyed");
+}
+
+
 Cell* MoveController::getSelectedCell() const {
     return _selectedCell;
 }
@@ -137,7 +142,7 @@ void MoveController::_addRookMoves(const Piece& piece, std::list<Cell*>& cells) 
 }
 
 void MoveController::_addKnightMoves(const Piece& piece, std::list<Cell*>& cells) const {
-    auto board = _game.getBoard();
+    auto& board = _game.getBoard();
 
     std::array<Cell*, 8> possibleMoves{};
     possibleMoves[0] = board.getCell(piece.position + sf::Vector2i( 1, -2));
@@ -163,7 +168,7 @@ void MoveController::_addQueenMoves(const Piece& piece, std::list<Cell*>& cells)
 }
 
 void MoveController::_addKingMoves(const Piece& piece, std::list<Cell*>& cells) const {
-    auto board = _game.getBoard();
+    auto& board = _game.getBoard();
 
     std::array<Cell*, 8> possibleMoves{};
     possibleMoves[0] = board.getCell(piece.position + sf::Vector2i(-1, -1));

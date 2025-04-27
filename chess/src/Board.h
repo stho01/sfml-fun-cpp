@@ -12,6 +12,7 @@
 class Board {
 public:
     Board();
+    ~Board();
 
     constexpr static int MAX_TILE_COUNT = 8;
     constexpr static int CELL_COUNT = MAX_TILE_COUNT * MAX_TILE_COUNT;

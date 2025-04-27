@@ -11,7 +11,7 @@ class Game;
 class MoveRenderer {
 public:
   MoveRenderer(sf::RenderTarget& renderTarget, Game& game);
-  ~MoveRenderer() = default;
+  ~MoveRenderer();
 
   void render(const MoveController& moveController);
 

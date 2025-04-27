@@ -15,7 +15,9 @@ BoardRenderer::BoardRenderer(Game& game, sf::RenderTarget& target)
 
 }
 
-BoardRenderer::~BoardRenderer() {}
+BoardRenderer::~BoardRenderer() {
+    Logger::Info("BoardRenderer destroyed");
+}
 
 void BoardRenderer::initialize() {
     _text.setCharacterSize(14);

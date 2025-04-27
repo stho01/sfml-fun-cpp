@@ -15,6 +15,10 @@ MoveRenderer::MoveRenderer(sf::RenderTarget& renderTarget, Game& game)
   _possibleMove.setFillColor(sf::Color(0x00FF0088));
 }
 
+MoveRenderer::~MoveRenderer() {
+  Logger::Info("MoveRenderer destroyed");
+}
+
 void MoveRenderer::render(const MoveController& moveController) {
   const auto& board = _game.getBoard();
 
