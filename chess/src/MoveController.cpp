@@ -9,31 +9,59 @@
 MoveController::MoveController(Game& game)
     : _game(game) {}
 
-Cell* MoveController::getSelectedCell() {
+Cell* MoveController::getSelectedCell() const {
     return _selectedCell;
 }
 
+Piece* MoveController::getSelectedPiece() const {
+    if (_selectedCell != nullptr) {
+        return _selectedCell->getPiece();
+    }
+    return nullptr;
+}
+
+std::optional<PieceColor> MoveController::getSelectedPieceColor() const {
+    auto* piece = getSelectedPiece();
+    if (piece != nullptr) {
+        return piece->color;
+    }
+    return std::nullopt;
+}
+
+bool MoveController::hasSelectedCell() const {
+    return _selectedCell != nullptr;
+}
+
 void MoveController::setSelectedCell(const sf::Vector2i& position) {
-    auto cell = _game.getBoard().getCell(position);
+    auto* cell = _game.getBoard().getCell(position);
     if (!cell) {
         return;
     }
     if (cell->isEmpty()) {
         return;
     }
-    _selectedCell = cell;
+    setSelectedCell(cell);
 }
 
 void MoveController::setSelectedCell(Cell* cell) {
-
+    _selectedCell = cell;
+    if (cell != nullptr) {
+        Logger::Info("Selected cell {}", cell->toString());
+        if (const auto* piece = cell->getPiece()) {
+            _setLegalMoves(*piece);
+        } else {
+            _legalMoves.clear();
+        }
+    }
 }
 
 bool MoveController::moveSelectedPiece(const sf::Vector2i& position) {
-    if (!_eligibleCells.has_value()) {
+    if (_legalMoves.empty()) {
         return false;
     }
+
     bool canMove = false;
-    for (const auto& cell : *_eligibleCells) {
+    for (const auto& cell : _legalMoves) {
         if (cell->getPosition() == position) {
             canMove = true;
             break;
@@ -43,39 +71,45 @@ bool MoveController::moveSelectedPiece(const sf::Vector2i& position) {
         return false;
     }
 
-    auto cell = _game.getBoard().getCell(position);
-    if (_game.getBoard().movePiece(*_selectedCell, *cell)) {
-        _selectedCell    = nullptr;
-        _eligibleCells = std::nullopt;
+    auto& board = _game.getBoard();
+    if (auto* cell = board.getCell(position); board.movePiece(*_selectedCell, *cell)) {
+        _selectedCell = nullptr;
+        _legalMoves.clear();
         return true;
     }
+
+    return false;
 }
 
-bool MoveController::isSelectedCell(const sf::Vector2i& position) {
-    auto cell = _game.getBoard().getCell(position);
+bool MoveController::isSelectedCell(const sf::Vector2i& position) const {
+    const auto* cell = _game.getBoard().getCell(position);
     return cell == _selectedCell;
 }
 
 void MoveController::deselectCell() {
     _selectedCell = nullptr;
+    _legalMoves.clear();
 }
 
-std::list<Cell*>& MoveController::_getEligibleCells(const Piece& piece) {
-    std::list<Cell*> cells;
+const std::list<Cell*>& MoveController::getLegalMoves() const {
+    return _legalMoves;
+}
+
+void MoveController::_setLegalMoves(const Piece& piece) {
+    _legalMoves.clear();
     switch (piece.pieceType) {
-        case PieceType::Pawn: _addPawnMoves(piece, cells); break;
-        case PieceType::Bishop: _addPawnMoves(piece, cells); break;
-        case PieceType::King: _addPawnMoves(piece, cells); break;
-        case PieceType::Knight: _addPawnMoves(piece, cells); break;
-        case PieceType::Queen: _addPawnMoves(piece, cells); break;
-        case PieceType::Rook: _addPawnMoves(piece, cells); break;
+        case Pawn: _addPawnMoves(piece, _legalMoves); break;
+        case Bishop: _addBishopMoves(piece, _legalMoves); break;
+        case King: _addKingMoves(piece, _legalMoves); break;
+        case Knight: _addKnightMoves(piece, _legalMoves); break;
+        case Queen: _addQueenMoves(piece, _legalMoves); break;
+        case Rook: _addRookMoves(piece, _legalMoves); break;
     }
-    return cells;
 }
 
-void MoveController::_addPawnMoves(const Piece& piece, std::list<Cell*>& cells) {
+void MoveController::_addPawnMoves(const Piece& piece, std::list<Cell*>& cells) const {
     auto& board = _game.getBoard();
-    auto yDir = piece.color == PieceColor::Black ? 1 : -1;
+    const auto yDir = piece.color == Black ? 1 : -1;
 
     Cell* cell{nullptr};
     if (piece.getMoveCount() == 1 && board.tryGetCell(piece.position + sf::Vector2i(0, yDir * 2), cell) && cell->isEmpty())
@@ -88,24 +122,24 @@ void MoveController::_addPawnMoves(const Piece& piece, std::list<Cell*>& cells) 
         cells.push_back(cell);
 }
 
-void MoveController::_addBishopMoves(const Piece& piece, std::list<Cell*>& cells) {
+void MoveController::_addBishopMoves(const Piece& piece, std::list<Cell*>& cells) const {
     _getCellsInDirection(piece, sf::Vector2i(-1, -1), cells);
     _getCellsInDirection(piece, sf::Vector2i(1, -1), cells);
     _getCellsInDirection(piece, sf::Vector2i(1, 1), cells);
     _getCellsInDirection(piece, sf::Vector2i(-1, 1), cells);
 }
 
-void MoveController::_addRookMoves(const Piece& piece, std::list<Cell*>& cells) {
+void MoveController::_addRookMoves(const Piece& piece, std::list<Cell*>& cells) const {
     _getCellsInDirection(piece, sf::Vector2i(0, -1), cells);
     _getCellsInDirection(piece, sf::Vector2i(0, 1), cells);
     _getCellsInDirection(piece, sf::Vector2i(-1, 0), cells);
     _getCellsInDirection(piece, sf::Vector2i(1, 0), cells);
 }
 
-void MoveController::_addKnightMoves(const Piece& piece, std::list<Cell*>& cells) {
+void MoveController::_addKnightMoves(const Piece& piece, std::list<Cell*>& cells) const {
     auto board = _game.getBoard();
 
-    std::array<Cell*, 8> possibleMoves;
+    std::array<Cell*, 8> possibleMoves{};
     possibleMoves[0] = board.getCell(piece.position + sf::Vector2i( 1, -2));
     possibleMoves[1] = board.getCell(piece.position + sf::Vector2i( 2, -1));
     possibleMoves[2] = board.getCell(piece.position + sf::Vector2i( 2,  1));
@@ -115,7 +149,7 @@ void MoveController::_addKnightMoves(const Piece& piece, std::list<Cell*>& cells
     possibleMoves[6] = board.getCell(piece.position + sf::Vector2i(-2, -1));
     possibleMoves[7] = board.getCell(piece.position + sf::Vector2i(-1, -2));
 
-    for(auto& cell : possibleMoves)
+    for (auto& cell : possibleMoves)
     {
         if (cell == nullptr) continue;
         if (cell->isEmpty() || cell->getPiece()->color != piece.color)
@@ -123,15 +157,15 @@ void MoveController::_addKnightMoves(const Piece& piece, std::list<Cell*>& cells
     }
 }
 
-void MoveController::_addQueenMoves(const Piece& piece, std::list<Cell*>& cells) {
+void MoveController::_addQueenMoves(const Piece& piece, std::list<Cell*>& cells) const {
     _addBishopMoves(piece, cells);
     _addRookMoves(piece, cells);
 }
 
-void MoveController::_addKingMoves(const Piece& piece, std::list<Cell*>& cells) {
+void MoveController::_addKingMoves(const Piece& piece, std::list<Cell*>& cells) const {
     auto board = _game.getBoard();
 
-    std::array<Cell*, 8> possibleMoves;
+    std::array<Cell*, 8> possibleMoves{};
     possibleMoves[0] = board.getCell(piece.position + sf::Vector2i(-1, -1));
     possibleMoves[1] = board.getCell(piece.position + sf::Vector2i( 0, -1));
     possibleMoves[2] = board.getCell(piece.position + sf::Vector2i( 1, -1));
@@ -141,26 +175,26 @@ void MoveController::_addKingMoves(const Piece& piece, std::list<Cell*>& cells) 
     possibleMoves[6] = board.getCell(piece.position + sf::Vector2i(-1,  1));
     possibleMoves[7] = board.getCell(piece.position + sf::Vector2i(-1,  0));
 
-    for(auto& cell : possibleMoves)
-    {
-        if (cell == nullptr) continue;
+    for (auto& cell : possibleMoves) {
+        if (cell == nullptr)
+            continue;
+
         if (cell->isEmpty() || cell->getPiece()->color != piece.color)
             cells.push_back(cell);
     }
 }
 
-void MoveController::_getCellsInDirection(const Piece& piece, const sf::Vector2i& direction, std::list<Cell*>& cells) {
-    auto board = _game.getBoard();
+void MoveController::_getCellsInDirection(const Piece& piece, const sf::Vector2i& direction, std::list<Cell*>& cells) const {
+    auto& board = _game.getBoard();
 
     for (auto i = 0; i < Board::MAX_TILE_COUNT; i++)
     {
-        auto cell = board.getCell(piece.position + direction * (i+1));
+        auto* cell = board.getCell(piece.position + direction * (i+1));
 
         if (cell == nullptr)
             break;
 
-        if (!cell->isEmpty())
-        {
+        if (cell->isEmpty() == false) {
             if (cell->getPiece()->color != piece.color)
                 cells.push_back(cell);
 

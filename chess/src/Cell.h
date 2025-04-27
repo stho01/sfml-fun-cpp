@@ -11,7 +11,7 @@ public:
     Cell() = default;
     Cell(int x, int y) : _position({x,y}) { }
 
-    void setPiece(const std::shared_ptr<Piece>& piece) {
+    void setPiece(Piece* piece) {
         _piece = piece;
         if (piece)
             _piece->setPosition(_position);
@@ -21,8 +21,17 @@ public:
         return _piece == nullptr;
     }
 
-    const std::shared_ptr<Piece>& getPiece() const {
+    Piece* getPiece() const {
         return _piece;
+    }
+
+    bool tryGetPiece(Piece*& piece) const {
+        piece = nullptr;
+        if (_piece != nullptr) {
+            piece = _piece;
+            return true;
+        }
+        return false;
     }
 
     sf::Vector2i getPosition() const {
@@ -30,11 +39,11 @@ public:
     }
 
     std::string toString() const {
-        auto pieceStr = _piece ? _piece->toString() : "null";
+        const auto pieceStr = _piece ? _piece->toString() : "null";
         return "Cell { Pos = { x = " + std::to_string(_position.x) + ", y = " + std::to_string(_position.y) + " } , Piece = " + pieceStr + " }";
     }
 
 private:
     sf::Vector2i _position;
-    std::shared_ptr<Piece> _piece{nullptr};
+    Piece* _piece{nullptr};
 };

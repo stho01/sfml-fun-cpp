@@ -12,24 +12,28 @@ class MoveController {
 public:
     explicit MoveController(Game& game);
     ~MoveController() = default;
-    Cell* getSelectedCell();
+    Cell* getSelectedCell() const;
+    Piece* getSelectedPiece() const;
+    std::optional<PieceColor> getSelectedPieceColor() const;
+    bool hasSelectedCell() const;
     void setSelectedCell(const sf::Vector2i& position);
     void setSelectedCell(Cell* cell);
     bool moveSelectedPiece(const sf::Vector2i& position);
-    bool isSelectedCell(const sf::Vector2i& position);
+    bool isSelectedCell(const sf::Vector2i& position) const;
     void deselectCell();
+    const std::list<Cell*>& getLegalMoves() const;
 
 private:
     Game& _game;
     Cell* _selectedCell{nullptr};
-    std::optional<std::list<Cell*>> _eligibleCells{std::nullopt};
+    std::list<Cell*> _legalMoves{};
 
-    std::list<Cell*>& _getEligibleCells(const Piece& piece);
-    void _addPawnMoves(const Piece& piece, std::list<Cell*>& cells);
-    void _addBishopMoves(const Piece& piece, std::list<Cell*>& cells);
-    void _addRookMoves(const Piece& piece, std::list<Cell*>& cells);
-    void _addKnightMoves(const Piece& piece, std::list<Cell*>& cells);
-    void _addQueenMoves(const Piece& piece, std::list<Cell*>& cells);
-    void _addKingMoves(const Piece& piece, std::list<Cell*>& cells);
-    void _getCellsInDirection(const Piece& piece, const sf::Vector2i& direction, std::list<Cell*>& cells);
+    void _setLegalMoves(const Piece& piece);
+    void _addPawnMoves(const Piece& piece, std::list<Cell*>& cells) const;
+    void _addBishopMoves(const Piece& piece, std::list<Cell*>& cells) const;
+    void _addRookMoves(const Piece& piece, std::list<Cell*>& cells) const;
+    void _addKnightMoves(const Piece& piece, std::list<Cell*>& cells) const;
+    void _addQueenMoves(const Piece& piece, std::list<Cell*>& cells) const;
+    void _addKingMoves(const Piece& piece, std::list<Cell*>& cells) const;
+    void _getCellsInDirection(const Piece& piece, const sf::Vector2i& direction, std::list<Cell*>& cells) const;
 };

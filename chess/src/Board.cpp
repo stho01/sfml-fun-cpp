@@ -13,6 +13,35 @@ Board::Board() {
   }
 }
 
+void Board::setup() {
+  clear();
+
+  placePiece(0, 0, _piecePool.acquire(Rook, Black));
+  placePiece(1, 0, _piecePool.acquire(Knight, Black));
+  placePiece(2, 0, _piecePool.acquire(Bishop, Black));
+  placePiece(3, 0, _piecePool.acquire(Queen, Black));
+  placePiece(4, 0, _piecePool.acquire(King, Black));
+  placePiece(5, 0, _piecePool.acquire(Bishop, Black));
+  placePiece(6, 0, _piecePool.acquire(Knight, Black));
+  placePiece(7, 0, _piecePool.acquire(Rook, Black));
+
+  for (int i = 0; i < MAX_TILE_COUNT; i++)
+  {
+    placePiece(i, 1, _piecePool.acquire(Pawn, Black));
+    placePiece(i, 6, _piecePool.acquire(Pawn, White));
+  }
+
+  placePiece(0, 7, _piecePool.acquire(Rook, White));
+  placePiece(1, 7, _piecePool.acquire(Knight, White));
+  placePiece(2, 7, _piecePool.acquire(Bishop, White));
+  placePiece(3, 7, _piecePool.acquire(Queen, White));
+  placePiece(4, 7, _piecePool.acquire(King, White));
+  placePiece(5, 7, _piecePool.acquire(Bishop, White));
+  placePiece(6, 7, _piecePool.acquire(Knight, White));
+  placePiece(7, 7, _piecePool.acquire(Rook, White));
+}
+
+
 const std::array<Cell, Board::CELL_COUNT>& Board::getCells() {
   return _cells;
 }
@@ -63,12 +92,11 @@ bool Board::tryGetEnemyCell(const sf::Vector2i& position, const PieceColor& colo
   return piece && piece->color != color;
 }
 
-bool Board::placePiece(const int x, const int y, const std::shared_ptr<Piece>& piece) {
-  auto* cell = getCell(x, y);
-  if (cell == nullptr) {
-    return false;
+bool Board::placePiece(const int x, const int y, Piece* piece) {
+  if (auto* cell = getCell(x, y)) {
+    cell->setPiece(piece);
+    return true;
   }
-  cell->setPiece(piece);
   return true;
 }
 
@@ -93,20 +121,28 @@ sf::IntRect Board::getBoundingBox(int index) const {
 
 void Board::clear() {
   for (auto& cell : _cells) {
+    if (auto* piece = cell.getPiece()) {
+      _piecePool.release(piece);
+    }
     cell.setPiece(nullptr);
   }
 }
 
 bool Board::movePiece(Cell& sourceCell, Cell& targetCell) {
-  const auto sourcePiece = sourceCell.getPiece();
-  const auto targetPiece = targetCell.getPiece();
-
-  if (sourcePiece != nullptr && targetPiece == nullptr) {
-    targetCell.setPiece(sourcePiece);
-    sourceCell.setPiece(nullptr);
-    return true;
+  if (sourceCell.isEmpty() == false) {
+    if (targetCell.isEmpty()) {
+      targetCell.setPiece(sourceCell.getPiece());
+      sourceCell.setPiece(nullptr);
+      return true;
+    }
+    // If the target cell is not empty, check if the piece is an enemy
+    if (Piece* piece; targetCell.tryGetPiece(piece) && piece->color != sourceCell.getPiece()->color) {
+      targetCell.setPiece(sourceCell.getPiece());
+      sourceCell.setPiece(nullptr);
+      _piecePool.release(piece); // Piece died. Release the captured piece
+      return true;
+    }
   }
-
   return false;
 }
 
