@@ -4,16 +4,20 @@
 
 #pragma once
 
+#include <extensions/extensions.h>
 #include <SFML/Graphics.hpp>
-#include "Piece.h"
 #include "Cell.h"
+#include "Piece.h"
 
 class Board {
 public:
     Board();
+    ~Board();
 
     constexpr static int MAX_TILE_COUNT = 8;
     constexpr static int CELL_COUNT = MAX_TILE_COUNT * MAX_TILE_COUNT;
+
+    void setup();
 
     const std::array<Cell, CELL_COUNT>& getCells();
 
@@ -29,17 +33,18 @@ public:
     Cell* getCell(const sf::Vector2i& position);
     bool tryGetCell(const sf::Vector2i& position, Cell*& cell);
     bool tryGetEnemyCell(const sf::Vector2i& position, const PieceColor& color, Cell*& cell);
-    bool placePiece(int x, int y, const std::shared_ptr<Piece>& piece);
-    sf::IntRect getBoundingBox(int index) const;
+    bool placePiece(int x, int y, Piece* piece);
+    [[nodiscard]] sf::IntRect getBoundingBox(int index) const;
     void clear();
     bool movePiece(Cell& sourceCell, Cell& targetCell);
-    sf::Vector2i positionFromScreenCoords(const sf::Vector2i& position) const;
-    sf::Vector2i positionToScreenCoords(const sf::Vector2i& boardPosition) const;
-
+    [[nodiscard]] sf::Vector2i positionFromScreenCoords(const sf::Vector2i& position) const;
+    [[nodiscard]] sf::Vector2i positionToScreenCoords(const sf::Vector2i& boardPosition) const;
 
 private:
     std::array<Cell, CELL_COUNT> _cells{};
     sf::Vector2f _position{0,0};
     sf::Vector2f _size{600,600};
-    bool _inRange(int value) const;
+    stho::ObjectPool<Piece> _piecePool;
+
+    [[nodiscard]] bool _inRange(int value) const;
 };

@@ -13,6 +13,7 @@
 class PieceRenderer {
 public:
     PieceRenderer(sf::RenderTarget& renderTarget, SpriteAtlas& spriteAtlas);
+    ~PieceRenderer();
     void initialize();
     void render(const Board& board, const Piece& piece) const;
     void setScale(const sf::Vector2f& scale) { _scale = scale; }

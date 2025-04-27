@@ -15,7 +15,9 @@ BoardRenderer::BoardRenderer(Game& game, sf::RenderTarget& target)
 
 }
 
-BoardRenderer::~BoardRenderer() {}
+BoardRenderer::~BoardRenderer() {
+    Logger::Info("BoardRenderer destroyed");
+}
 
 void BoardRenderer::initialize() {
     _text.setCharacterSize(14);
@@ -29,7 +31,7 @@ void BoardRenderer::initialize() {
     for (int i = 0; i < 64; i++) {
         int x = i % Board::MAX_TILE_COUNT;
         int y = i / Board::MAX_TILE_COUNT;
-        shape.setFillColor(_isDarkTile(x, y) ? sf::Color({0,0,0,100}) : sf::Color({255,255,255,100}));
+        shape.setFillColor(_isDarkTile(x, y) ? sf::Color({0x683914FF}) : sf::Color::White);
         shape.setPosition(sf::Vector2f(x, y));
         renderTexture.draw(shape);
     }

@@ -8,6 +8,10 @@
 PieceRenderer::PieceRenderer(sf::RenderTarget& renderTarget, SpriteAtlas& spriteAtlas)
     : _renderTarget(renderTarget), _spriteAtlas(spriteAtlas) { }
 
+PieceRenderer::~PieceRenderer() {
+    Logger::Info("PieceRenderer destroyed");
+}
+
 void PieceRenderer::initialize() {
     const std::array<std::pair<PieceColor, std::string>, 2> colors = {
         std::make_pair(White, "white"),

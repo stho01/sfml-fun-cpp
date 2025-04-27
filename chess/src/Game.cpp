@@ -2,9 +2,12 @@
 // Created by stho on 10.04.2025.
 //
 
-#include <iostream>
 #include "Game.h"
+#include <iostream>
 #include "BoardRenderer.h"
+#include "MoveController.h"
+#include "MoveRenderer.h"
+#include "NamePlateRenderer.h"
 
 Game::Game(sf::RenderWindow* window)
     : GameBase(window)
@@ -28,56 +31,65 @@ void Game::initialize() {
     _pieceRenderer = new PieceRenderer(*getWindow(), _spriteAtlas);
     _pieceRenderer->initialize();
 
+    _moveController = std::make_unique<MoveController>(*this);
+    _moveRenderer = std::make_unique<MoveRenderer>(*getWindow(), *this);
+    _namePlateRenderer = std::make_unique<NamePlateRenderer>(*getWindow(), *this);
+
     _board.setSize({
-        windowWidth() * 0.8f,
-        windowHeight() * 0.8f
+        static_cast<float>(windowWidth()) * 0.8f,
+        static_cast<float>(windowHeight()) * 0.8f
     });
     _board.setPosition(windowCenter() - _board.getSize() / 2.f);
 
-    _setupGame();
+    _board.setup();
 }
 
 void Game::update() {
-    // Logger::Info(std::format("Delta Time: {:.13f} seconds", static_cast<float>(stho::Timer::getDeltaTimeSeconds())));
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+        if (_leftMouseClickedLastFrame) {
+            return;
+        }
+
+        const auto position = _board.positionFromScreenCoords(getMousePosition());
+        if (!_moveController->hasSelectedCell()) {
+            _moveController->setSelectedCell(position);
+
+            if (const auto color =  _moveController->getSelectedPieceColor(); color.has_value() && color.value() != _currentPlayer) {
+                _moveController->deselectCell();
+            }
+        } else if (_moveController->isSelectedCell(position)) {
+            _moveController->deselectCell();
+        } else if (_moveController->moveSelectedPiece(position)) {
+            _currentPlayer = _currentPlayer == White ? Black : White;
+        }
+
+        _leftMouseClickedLastFrame = true;
+    } else {
+        _leftMouseClickedLastFrame = false;
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
+        _board.setup();
+        _currentPlayer = White;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
+        _moveController->deselectCell();
+    }
 }
 
 void Game::render() {
     _boardRenderer->render(_board);
+    _moveRenderer->render(*_moveController);
 
     for (const auto& cell : _board.getCells()) {
         if (const auto& piece = cell.getPiece(); piece) {
             _pieceRenderer->render(_board, *piece);
         }
     }
+
+    _namePlateRenderer->render();
 }
 
 void Game::unload() {
     std::cout << "Game unloaded!" << std::endl;
-}
-
-void Game::_setupGame() {
-    _board.clear();
-    _board.placePiece(0, 0, std::make_shared<Piece>(Rook, Black));
-    _board.placePiece(1, 0, std::make_shared<Piece>(Knight, Black));
-    _board.placePiece(2, 0, std::make_shared<Piece>(Bishop, Black));
-    _board.placePiece(3, 0, std::make_shared<Piece>(Queen, Black));
-    _board.placePiece(4, 0, std::make_shared<Piece>(King, Black));
-    _board.placePiece(5, 0, std::make_shared<Piece>(Bishop, Black));
-    _board.placePiece(6, 0, std::make_shared<Piece>(Knight, Black));
-    _board.placePiece(7, 0, std::make_shared<Piece>(Rook, Black));
-
-    for (int i = 0; i < Board::MAX_TILE_COUNT; i++)
-    {
-        _board.placePiece(i, 1, std::make_shared<Piece>(Pawn, Black));
-        _board.placePiece(i, 6, std::make_shared<Piece>(Pawn, White));
-    }
-
-    _board.placePiece(0, 7, std::make_shared<Piece>(Rook, White));
-    _board.placePiece(1, 7, std::make_shared<Piece>(Knight, White));
-    _board.placePiece(2, 7, std::make_shared<Piece>(Bishop, White));
-    _board.placePiece(3, 7, std::make_shared<Piece>(Queen, White));
-    _board.placePiece(4, 7, std::make_shared<Piece>(King, White));
-    _board.placePiece(5, 7, std::make_shared<Piece>(Bishop, White));
-    _board.placePiece(6, 7, std::make_shared<Piece>(Knight, White));
-    _board.placePiece(7, 7, std::make_shared<Piece>(Rook, White));
 }

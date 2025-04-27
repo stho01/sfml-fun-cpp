@@ -26,6 +26,8 @@ namespace stho {
             if (!m_available.empty()) {
                 obj = m_available.back();
                 m_available.pop_back();
+                obj->~T();
+                new (obj) T(std::forward<Args>(args)...);
             } else {
                 obj = new T(std::forward<Args>(args)...);
             }

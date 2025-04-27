@@ -45,10 +45,12 @@ struct Piece {
     }
 
     std::string toString() const {
-        return "Piece { Type = " + std::to_string(pieceType) +
+        return "{"
+               " Type = " + std::to_string(pieceType) +
                ", Color = " + std::to_string(color) +
                ", Position = { x = " + std::to_string(position.x) +
-               ", y = " + std::to_string(position.y) + " } }";
+               ", y = " + std::to_string(position.y) + " }" +
+               "}";
     }
 
 private:
