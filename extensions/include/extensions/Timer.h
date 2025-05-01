@@ -48,7 +48,11 @@ namespace stho {
         }
 
         static float deltaTimeSeconds() {
-            return  DeltaTime.count() / 1000000.0f;
+            return DeltaTime.count() / 1000000.0;
+        }
+
+        static float deltaTimeMilliseconds() {
+            return  DeltaTime.count() / 1000.0;
         }
 
         static std::chrono::high_resolution_clock::time_point getTimestamp() {

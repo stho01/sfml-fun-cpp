@@ -6,7 +6,20 @@
 
 #include <SFML/Graphics.hpp>
 
+struct RocketId {
+  static int getNextId() {
+    return nextId++;
+  }
+
+private:
+  static inline int nextId = 1;
+};
+
 struct Rocket {
+  Rocket() {
+    _id = RocketId::getNextId();
+  }
+
   sf::Vector2f position{};
   sf::Vector2f velocity{};
   sf::Vector2f acceleration{};
@@ -20,4 +33,8 @@ struct Rocket {
 
   bool hasFuel() const { return fuel > 0; }
   bool isDead() const { return done || age >= totalLifetime; }
+  int getId() const { return _id; }
+
+private:
+  int _id{0};
 };

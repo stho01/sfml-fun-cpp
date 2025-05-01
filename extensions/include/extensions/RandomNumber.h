@@ -79,6 +79,14 @@ namespace stho {
             const auto yMax = rect.position.y + rect.size.y;
             return Vector2f(xMin, xMax, yMin, yMax);
         }
+
+        static float angleDegrees() {
+            return nextFloat(0.f, 360.f);
+        }
+
+        static sf::Vector2f directionVector() {
+            return Mathf::getDirectionFromDegrees(angleDegrees());
+        }
     };
 
 }

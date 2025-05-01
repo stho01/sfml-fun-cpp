@@ -2,8 +2,11 @@
 // Created by stho on 11.04.2025.
 //
 
-#include <numbers>
 #include "extensions/Mathf.h"
+#include <format>
+#include <numbers>
+#include <string>
+
 namespace stho {
 
     sf::Vector2f Vector2f::multiply(const sf::Vector2f& lhs, const sf::Vector2f& rhs) {
@@ -23,6 +26,10 @@ namespace stho {
     }
     sf::Vector2f Vector2f::divide(const sf::Vector2f& lhs, const sf::Vector2i& rhs) {
         return { lhs.x / rhs.x, lhs.y / rhs.y };
+    }
+
+    std::string Vector2f::asString(sf::Vector2f vector2) {
+        return std::format("x: {}, y: {}", vector2.x, vector2.y);
     }
 
     PolarVector2f Mathf::ToPolarCoordinates(const sf::Vector2f& vector) {
@@ -85,5 +92,24 @@ namespace stho {
     sf::Vector2f Mathf::reflect(const sf::Vector2f& vec, const  sf::Vector2f& normal) {
         const auto d = vec.normalized();
         return d - 2 * d.dot(normal) * normal;
+    }
+
+    double Mathf::degreeToRadian(const double& degree) {
+        return degree * (std::numbers::pi / 180.f);
+    }
+
+    double Mathf::radianToDegree(const double& radian) {
+        return radian * (180.f / std::numbers::pi);
+    }
+
+    sf::Vector2f Mathf::getDirectionFromDegrees(const double& degrees) {
+        return getDirectionFromRadian(degreeToRadian(degrees));
+    }
+
+    sf::Vector2f Mathf::getDirectionFromRadian(const double& radian) {
+        return sf::Vector2f(
+            static_cast<float>(cos(radian)),
+            static_cast<float>(sin(radian))
+        );
     }
 }

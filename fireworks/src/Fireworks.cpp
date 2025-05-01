@@ -10,11 +10,9 @@
 
 Fireworks::Fireworks(sf::RenderWindow* window)
     : GameBase(window)
-    , _particleRenderer(*window)
-    , _explosionRenderer(_particleRenderer)
 {
     setClearColor(sf::Color::Black);
-    window->setFramerateLimit(450);
+    window->setFramerateLimit(250);
 }
 
 Fireworks::~Fireworks() {
@@ -27,8 +25,13 @@ Fireworks::~Fireworks() {
 void Fireworks::initialize() {
     Logger::Info("Initialized sprites");
 
+    _particleRenderer = std::make_unique<ParticleRenderer>(*getWindow());
+    _explosionRenderer = std::make_unique<ExplosionRenderer>(*_particleRenderer);
     _explosionUpdater = std::make_unique<ExplosionUpdater>(*this);
-    _rocketRenderer = std::make_unique<RocketRenderer>(*getWindow(), _particleRenderer);
+    _rocketRenderer = std::make_unique<RocketRenderer>(*getWindow(), *_particleRenderer);
+    _rocketSpawner = std::make_unique<RocketSpawner>(*this);
+    _explosionSpawner = std::make_unique<ExplosionSpawner>();
+    _rocketUpdater = std::make_unique<RocketUpdater>(*this, *_explosionSpawner);
 
     _earth.setOrigin({
         _earth.getRadius(),
@@ -52,34 +55,35 @@ void Fireworks::initialize() {
 
     this->setMouseButtonPressedHandler([this](const sf::Mouse::Button button) {
         if (button == sf::Mouse::Button::Left) {
-            auto explosion = _explosionSpawner.spawn(static_cast<sf::Vector2f>(getMousePosition()));
-            _explosions.insert(std::move(explosion));
+            // auto explosion = _explosionSpawner->spawn(static_cast<sf::Vector2f>(getMousePosition()));
+            // _explosions.insert(std::move(explosion));
+            _rockets.insert(_rocketSpawner->spawnOnSurface());
         }
     });
 }
 
 void Fireworks::update() {
+    _rocketSpawner->update();
+
+    for (auto& rocket : _rockets) {
+        _rocketUpdater->update(*rocket);
+    }
     for (auto& explosion : _explosions) {
         _explosionUpdater->update(*explosion);
     }
-    erase_if(_explosions, [](const auto& explosion) { return explosion->isDone(); });
 
-    // _explosions.erase(std::remove_if<std::shared_ptr<Explosion>>(_explosions.begin(), _explosions.end(),
-    //     [](const auto& explosion) {
-    //         return explosion->isDone();
-    //     }), _explosions.end());
+    erase_if(_explosions, [](const auto& explosion) { return explosion->isDone(); });
+    erase_if(_rockets, [](const auto& rocket) { return rocket->isDead(); });
 }
 
 void Fireworks::render() {
     this->m_window->draw(*_earthSprite);
     for (auto& explosion : _explosions) {
-        _explosionRenderer.render(*explosion);
+        _explosionRenderer->render(*explosion);
     }
-
-    Rocket rocket;
-    rocket.position = {100.f, 100.f};
-    rocket.mass = 15.f;
-    _rocketRenderer->render(rocket);
+    for (auto& rocket : _rockets) {
+        _rocketRenderer->render(*rocket);
+    }
 }
 
 void Fireworks::unload() {
@@ -89,3 +93,17 @@ void Fireworks::unload() {
 sf::Vector2f Fireworks::getEarthPosition() const {
     return _earth.getPosition();
 }
+
+float Fireworks::getEarthRadius() const {
+    return _earth.getRadius();
+}
+
+void Fireworks::addRocket(std::shared_ptr<Rocket> rocket) {
+    _rockets.insert(std::move(rocket));
+}
+
+void Fireworks::addExplosion(std::shared_ptr<Explosion> explosion) {
+    _explosions.insert(std::move(explosion));
+}
+
+

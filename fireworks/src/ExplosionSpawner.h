@@ -6,14 +6,13 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-
 #include "Explosion.h"
 #include "extensions/extensions.h"
 
 class ExplosionSpawner {
-  stho::Rangef _density;
-  stho::Rangef _lifetime;
-  stho::Rangef _strength;
+  stho::Rangef _density{150.f,250.f};
+  stho::Rangef _lifetime{1000.f, 2000.f};
+  stho::Rangef _strength{40.f, 80.f};
   std::vector<sf::Color> _colors;
 
 public:
