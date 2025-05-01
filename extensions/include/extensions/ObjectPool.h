@@ -5,41 +5,52 @@
 #pragma once
 
 #include <vector>
+#include "Logger.h"
 
 namespace stho {
+
     template<typename T>
     class ObjectPool {
+        std::vector<T*> _available;
+
     public:
 
-        ObjectPool() = default;
         ~ObjectPool() {
-            // Slett alt
-            for (auto* obj : m_available) {
-                delete obj;
-            }
+            Logger::Info("ObjectPool destroyed");
+        }
+
+        static ObjectPool* shared() {
+            static ObjectPool instance;
+            return &instance;
         }
 
         template<typename... Args>
-        T* acquire(Args &&... args) {
+        std::shared_ptr<T> acquire(Args&&... args) {
             T* obj = nullptr;
 
-            if (!m_available.empty()) {
-                obj = m_available.back();
-                m_available.pop_back();
+            if (!_available.empty()) {
+                obj = _available.back();
+                _available.pop_back();
+
+                // Rekonstruer objektet på plass
                 obj->~T();
                 new (obj) T(std::forward<Args>(args)...);
+                Logger::Debug("Object reused. AvailableCount={}", this->_available.size());
             } else {
                 obj = new T(std::forward<Args>(args)...);
+                Logger::Debug("Object created. AvailableCount={}", this->_available.size());
             }
 
-            return obj;
+            // Lag en shared_ptr med custom deleter som returnerer objektet til poolen
+            return std::shared_ptr<T>(
+                obj,
+                [this](T* p) {
+                    p->~T(); // Destruer objektet
+                    this->_available.push_back(p);
+                    Logger::Debug("Object returned to pool. AvailableCount={}", this->_available.size());
+                }
+            );
         }
 
-        void release(T* obj) {
-            m_available.push_back(obj);
-        }
-
-    private:
-        std::vector<T*> m_available;
     };
 }

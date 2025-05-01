@@ -18,17 +18,16 @@ Cell* MoveController::getSelectedCell() const {
     return _selectedCell;
 }
 
-Piece* MoveController::getSelectedPiece() const {
+std::optional<std::shared_ptr<Piece>> MoveController::getSelectedPiece() const {
     if (_selectedCell != nullptr) {
         return _selectedCell->getPiece();
     }
-    return nullptr;
+    return std::nullopt;
 }
 
 std::optional<PieceColor> MoveController::getSelectedPieceColor() const {
-    auto* piece = getSelectedPiece();
-    if (piece != nullptr) {
-        return piece->color;
+    if (const auto& piece = getSelectedPiece(); piece.has_value()) {
+        return piece.value()->color;
     }
     return std::nullopt;
 }
@@ -52,7 +51,7 @@ void MoveController::setSelectedCell(Cell* cell) {
     _selectedCell = cell;
     if (cell != nullptr) {
         Logger::Info("Selected cell {}", cell->toString());
-        if (const auto* piece = cell->getPiece()) {
+        if (const auto& piece = cell->getPiece()) {
             _setLegalMoves(*piece);
         } else {
             _legalMoves.clear();

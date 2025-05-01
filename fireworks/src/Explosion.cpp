@@ -3,19 +3,21 @@
 //
 
 #include "Explosion.h"
+#include "extensions/ObjectPool.h"
 
-Explosion::Explosion(const int density) : _particles(std::vector<Particle>(density)) {
-  for (int i = 0; i < density; i++) {
-    Particle p;
-    p.r = 255;
-    p.g = 255;
-    p.b = 255;
-    p.totalLifetime = 100.0f;
-    _particles.push_back(p);
+Explosion::Explosion(const int particleCount)
+{
+  for (auto i = 0; i < particleCount; i++) {
+    auto particle = stho::ObjectPool<Particle>::shared()->acquire();
+    _particles.push_back(std::move(particle));
   }
 }
 
-std::span<Particle> Explosion::particles() {
+Explosion::~Explosion() {
+  _particles.clear();
+}
+
+std::span<std::shared_ptr<Particle>> Explosion::particles() {
   return std::span(_particles);
 }
 
@@ -37,7 +39,7 @@ sf::Vector2f Explosion::getPosition() const {
 
 bool Explosion::isDone() const {
   for (const auto& particle : _particles) {
-    if (!particle.isDead()) {
+    if (!particle->isDead()) {
       return false;
     }
   }

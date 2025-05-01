@@ -22,11 +22,11 @@ float ExplosionUpdater::getAirResistance() const {
 }
 
 void ExplosionUpdater::update(Explosion& explosion) const {
-  for (auto& particle : explosion.particles()) {
+  for (const auto& particle : explosion.particles()) {
 
-    particle.age += stho::Timer::deltaTimeSeconds() * 1000.f;
+    particle->age += stho::Timer::deltaTimeSeconds() * 1000.f;
 
-    const auto distance = particle.position - _fireworks.getEarthPosition();
+    const auto distance = particle->position - _fireworks.getEarthPosition();
     if (distance.lengthSquared() == 0.f) {
       continue;
     }
@@ -34,13 +34,13 @@ void ExplosionUpdater::update(Explosion& explosion) const {
     const auto gravityForce = distance.normalized() * _fireworks.GRAVITY * _airResistance;
 
     sf::Vector2f direction{0.f, 0.f};
-    if (particle.velocity.lengthSquared() != 0.f) {
-      direction = particle.velocity.normalized();
+    if (particle->velocity.lengthSquared() != 0.f) {
+      direction = particle->velocity.normalized();
     }
     const auto airResistanceDecay = -(direction * _airResistance);
 
-    particle.acceleration += (gravityForce + airResistanceDecay) / particle.mass * stho::Timer::deltaTimeSeconds();
-    particle.velocity += particle.acceleration;
-    particle.position += particle.velocity * stho::Timer::deltaTimeSeconds();
+    particle->acceleration += (gravityForce + airResistanceDecay) / particle->mass * stho::Timer::deltaTimeSeconds();
+    particle->velocity += particle->acceleration;
+    particle->position += particle->velocity * stho::Timer::deltaTimeSeconds();
   }
 }

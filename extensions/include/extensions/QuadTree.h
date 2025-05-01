@@ -62,7 +62,6 @@ namespace stho {
 
             for (const auto& child : m_children) {
                 child->clear();
-                m_pool.release(child);
             }
             m_isLeaf = true;
         }
@@ -144,10 +143,10 @@ namespace stho {
     private:
         std::string m_name;
         int m_depth = 0;
-        ObjectPool<QuadTree> m_pool;
+        // ObjectPool<QuadTree> m_pool;
         sf::FloatRect m_boundary;
         std::vector<Node> m_nodes;
-        QuadTree* m_children[4];
+        std::shared_ptr<QuadTree> m_children[4];
         bool m_isLeaf = true; // initially a leaf
         unsigned int m_boundaryCapacity = 4;
 
@@ -161,10 +160,10 @@ namespace stho {
             const auto right = m_boundary.position.x + width;
 
             int nextDepth = m_depth + 1;
-            m_children[0] = m_pool.acquire(sf::FloatRect({left,top}, size), m_boundaryCapacity, "northwest", nextDepth);
-            m_children[1] = m_pool.acquire(sf::FloatRect({right,top}, size), m_boundaryCapacity, "northeast", nextDepth);
-            m_children[2] = m_pool.acquire(sf::FloatRect({right,bottom}, size), m_boundaryCapacity, "southeast", nextDepth);
-            m_children[3] = m_pool.acquire(sf::FloatRect({left,bottom}, size), m_boundaryCapacity, "southwest", nextDepth);
+            m_children[0] = ObjectPool<QuadTree>::shared()->acquire(sf::FloatRect({left,top}, size), m_boundaryCapacity, "northwest", nextDepth);
+            m_children[1] = ObjectPool<QuadTree>::shared()->acquire(sf::FloatRect({right,top}, size), m_boundaryCapacity, "northeast", nextDepth);
+            m_children[2] = ObjectPool<QuadTree>::shared()->acquire(sf::FloatRect({right,bottom}, size), m_boundaryCapacity, "southeast", nextDepth);
+            m_children[3] = ObjectPool<QuadTree>::shared()->acquire(sf::FloatRect({left,bottom}, size), m_boundaryCapacity, "southwest", nextDepth);
 
             for (auto& node : m_nodes) {
                 for (auto& child : m_children) {

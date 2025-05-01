@@ -13,7 +13,7 @@ public:
     explicit MoveController(Game& game);
     ~MoveController();
     Cell* getSelectedCell() const;
-    Piece* getSelectedPiece() const;
+    std::optional<std::shared_ptr<Piece>> getSelectedPiece() const;
     std::optional<PieceColor> getSelectedPieceColor() const;
     bool hasSelectedCell() const;
     void setSelectedCell(const sf::Vector2i& position);

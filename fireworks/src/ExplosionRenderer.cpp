@@ -12,6 +12,6 @@ ExplosionRenderer::~ExplosionRenderer() = default;
 
 void ExplosionRenderer::render(Explosion& explosion) const {
   for (const auto& particle : explosion.particles()) {
-    _particleRenderer.render(particle);
+    _particleRenderer.render(*particle);
   }
 }

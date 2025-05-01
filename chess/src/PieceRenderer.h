@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include <unordered_map>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Sprite.hpp>
-#include <unordered_map>
 #include "Board.h"
 #include "SpriteAtlas.h"
 
@@ -26,5 +26,5 @@ private:
     sf::Vector2f _scale{1.f,1.f};
 
     static sf::Vector2f _getSpriteCenter(const sf::Sprite& sprite);
-    const std::unique_ptr<sf::Sprite>& _getPieceSprite(const Piece& piece) const;
+    sf::Sprite* _getPieceSprite(const Piece& piece) const;
 };

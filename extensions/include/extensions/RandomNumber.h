@@ -6,6 +6,7 @@
 
 #include <random>
 #include <SFML/Graphics.hpp>
+#include "Range.h"
 
 namespace stho {
 
@@ -22,6 +23,10 @@ namespace stho {
             return dis(gen);
         }
 
+        static int next(const Rangei& range) {
+            return next(range.min, range.max);
+        }
+
         static float nextFloat(const float min, const float max) {
             std::random_device rd;
             std::mt19937 gen(rd());
@@ -29,6 +34,10 @@ namespace stho {
                 std::min(min, max),
                 std::max(min, max));
             return dis(gen);
+        }
+
+        static float nextFloat(const Rangef& range) {
+            return nextFloat(range.min, range.max);
         }
 
         static sf::Vector2f vector2fAndReflect(const int xMin, const int xMax, const int yMin, const int yMax) {

@@ -28,11 +28,13 @@ void SpriteAtlas::load(const std::string& atlasDefinition) {
     }
 }
 
-const std::unique_ptr<sf::Sprite>& SpriteAtlas::getSprite(const std::string& name) {
+sf::Sprite* SpriteAtlas::getSprite(const std::string& name) {
     const auto key = _normalizeName(name);
+
     if (const auto search = _sprites.find(key); search != _sprites.end()) {
-        return search->second;
+        return search->second.get();
     }
+
     return nullptr;
 }
 

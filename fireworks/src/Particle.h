@@ -16,7 +16,6 @@ struct Particle {
   float mass{0.f};
   bool isDead() const { return age >= totalLifetime; }
 
-
   void setPosition(const sf::Vector2f& position) {
     this->position = position;
   }

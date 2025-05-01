@@ -20,29 +20,29 @@ Board::~Board() {
 void Board::setup() {
   clear();
 
-  placePiece(0, 0, _piecePool.acquire(Rook, Black));
-  placePiece(1, 0, _piecePool.acquire(Knight, Black));
-  placePiece(2, 0, _piecePool.acquire(Bishop, Black));
-  placePiece(3, 0, _piecePool.acquire(Queen, Black));
-  placePiece(4, 0, _piecePool.acquire(King, Black));
-  placePiece(5, 0, _piecePool.acquire(Bishop, Black));
-  placePiece(6, 0, _piecePool.acquire(Knight, Black));
-  placePiece(7, 0, _piecePool.acquire(Rook, Black));
+  placePiece(0, 0, stho::ObjectPool<Piece>::shared()->acquire(Rook, Black));
+  placePiece(1, 0, stho::ObjectPool<Piece>::shared()->acquire(Knight, Black));
+  placePiece(2, 0, stho::ObjectPool<Piece>::shared()->acquire(Bishop, Black));
+  placePiece(3, 0, stho::ObjectPool<Piece>::shared()->acquire(Queen, Black));
+  placePiece(4, 0, stho::ObjectPool<Piece>::shared()->acquire(King, Black));
+  placePiece(5, 0, stho::ObjectPool<Piece>::shared()->acquire(Bishop, Black));
+  placePiece(6, 0, stho::ObjectPool<Piece>::shared()->acquire(Knight, Black));
+  placePiece(7, 0, stho::ObjectPool<Piece>::shared()->acquire(Rook, Black));
 
   for (int i = 0; i < MAX_TILE_COUNT; i++)
   {
-    placePiece(i, 1, _piecePool.acquire(Pawn, Black));
-    placePiece(i, 6, _piecePool.acquire(Pawn, White));
+    placePiece(i, 1, stho::ObjectPool<Piece>::shared()->acquire(Pawn, Black));
+    placePiece(i, 6, stho::ObjectPool<Piece>::shared()->acquire(Pawn, White));
   }
 
-  placePiece(0, 7, _piecePool.acquire(Rook, White));
-  placePiece(1, 7, _piecePool.acquire(Knight, White));
-  placePiece(2, 7, _piecePool.acquire(Bishop, White));
-  placePiece(3, 7, _piecePool.acquire(Queen, White));
-  placePiece(4, 7, _piecePool.acquire(King, White));
-  placePiece(5, 7, _piecePool.acquire(Bishop, White));
-  placePiece(6, 7, _piecePool.acquire(Knight, White));
-  placePiece(7, 7, _piecePool.acquire(Rook, White));
+  placePiece(0, 7, stho::ObjectPool<Piece>::shared()->acquire(Rook, White));
+  placePiece(1, 7, stho::ObjectPool<Piece>::shared()->acquire(Knight, White));
+  placePiece(2, 7, stho::ObjectPool<Piece>::shared()->acquire(Bishop, White));
+  placePiece(3, 7, stho::ObjectPool<Piece>::shared()->acquire(Queen, White));
+  placePiece(4, 7, stho::ObjectPool<Piece>::shared()->acquire(King, White));
+  placePiece(5, 7, stho::ObjectPool<Piece>::shared()->acquire(Bishop, White));
+  placePiece(6, 7, stho::ObjectPool<Piece>::shared()->acquire(Knight, White));
+  placePiece(7, 7, stho::ObjectPool<Piece>::shared()->acquire(Rook, White));
 }
 
 
@@ -96,7 +96,7 @@ bool Board::tryGetEnemyCell(const sf::Vector2i& position, const PieceColor& colo
   return piece && piece->color != color;
 }
 
-bool Board::placePiece(const int x, const int y, Piece* piece) {
+bool Board::placePiece(const int x, const int y, std::shared_ptr<Piece> piece) {
   if (auto* cell = getCell(x, y)) {
     cell->setPiece(piece);
     return true;
@@ -125,9 +125,6 @@ sf::IntRect Board::getBoundingBox(int index) const {
 
 void Board::clear() {
   for (auto& cell : _cells) {
-    if (auto* piece = cell.getPiece()) {
-      _piecePool.release(piece);
-    }
     cell.setPiece(nullptr);
   }
 }
@@ -140,10 +137,9 @@ bool Board::movePiece(Cell& sourceCell, Cell& targetCell) {
       return true;
     }
     // If the target cell is not empty, check if the piece is an enemy
-    if (Piece* piece; targetCell.tryGetPiece(piece) && piece->color != sourceCell.getPiece()->color) {
+    if (std::shared_ptr<Piece> piece; targetCell.tryGetPiece(piece) && piece->color != sourceCell.getPiece()->color) {
       targetCell.setPiece(sourceCell.getPiece());
       sourceCell.setPiece(nullptr);
-      _piecePool.release(piece); // Piece died. Release the captured piece
       return true;
     }
   }

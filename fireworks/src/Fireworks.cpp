@@ -3,10 +3,8 @@
 //
 
 #include "Fireworks.h"
-#include <cmath>
 #include <execution>
 #include <iostream>
-#include <numbers>
 #include "ExplosionUpdater.h"
 
 Fireworks::Fireworks(sf::RenderWindow* window)
@@ -16,6 +14,13 @@ Fireworks::Fireworks(sf::RenderWindow* window)
 {
     setClearColor(sf::Color::Black);
     window->setFramerateLimit(450);
+}
+
+Fireworks::~Fireworks() {
+    _explosions.clear();
+    _earthTexture.reset();
+    _earthSprite.reset();
+    _explosionUpdater.reset();
 }
 
 void Fireworks::initialize() {
@@ -45,43 +50,31 @@ void Fireworks::initialize() {
 
     this->setMouseButtonPressedHandler([this](const sf::Mouse::Button button) {
         if (button == sf::Mouse::Button::Left) {
-            Explosion explosion(150);
-            explosion.setStrength(stho::RandomNumber::nextFloat(90.f, 110.f));
-            explosion.setPosition(static_cast<sf::Vector2f>(getMousePosition()));
-
-            const auto particles = explosion.particles();
-            for (auto i = 0; i < particles.size(); i++) {
-                auto& particle = particles[i];
-                const auto angleOfVelocity = i / std::numbers::pi * 2;
-                const auto direction = sf::Vector2f(
-                    static_cast<float>(cos(angleOfVelocity)),
-                    static_cast<float>(sin(angleOfVelocity))
-                );
-
-                const auto variance = stho::RandomNumber::nextFloat(-explosion.getStrength()*0.9f, 0.f);
-                const auto velocity = direction * (explosion.getStrength() + variance);
-
-                particle.totalLifetime = 1250.f;
-                particle.velocity = velocity;
-                particle.position = explosion.getPosition();
-                particle.mass = stho::RandomNumber::nextFloat(.75f, 1.25f);
-            }
-
-            _explosions.push_back(explosion);
+            auto explosion = _explosionSpawner.spawn(static_cast<sf::Vector2f>(getMousePosition()));
+            _explosions.insert(std::move(explosion));
         }
     });
 }
 
 void Fireworks::update() {
     for (auto& explosion : _explosions) {
-        _explosionUpdater->update(explosion);
+        _explosionUpdater->update(*explosion);
     }
+
+    erase_if(_explosions, [](const auto& explosion) {
+        return explosion->isDone();
+    });
+
+    // _explosions.erase(std::remove_if<std::shared_ptr<Explosion>>(_explosions.begin(), _explosions.end(),
+    //     [](const auto& explosion) {
+    //         return explosion->isDone();
+    //     }), _explosions.end());
 }
 
 void Fireworks::render() {
     this->m_window->draw(*_earthSprite);
     for (auto& explosion : _explosions) {
-        _explosionRenderer.render(explosion);
+        _explosionRenderer.render(*explosion);
     }
 }
 

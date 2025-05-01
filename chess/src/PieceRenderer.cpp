@@ -34,7 +34,7 @@ void PieceRenderer::initialize() {
 }
 
 void PieceRenderer::render(const Board& board, const Piece& piece) const {
-    if (const auto& sprite = _getPieceSprite(piece); sprite)
+    if (auto* sprite = _getPieceSprite(piece); sprite)
     {
         const auto pos =
             stho::Vector2f::multiply(board.cellSize(), piece.position)
@@ -57,12 +57,12 @@ sf::Vector2f PieceRenderer::_getSpriteCenter(const sf::Sprite& sprite) {
     };
 }
 
-const std::unique_ptr<sf::Sprite>& PieceRenderer::_getPieceSprite(const Piece& piece) const {
+sf::Sprite* PieceRenderer::_getPieceSprite(const Piece& piece) const {
     const auto name = _names.find({piece.pieceType, piece.color});
     if (name == _names.end()) {
         return nullptr;
     }
-    const auto& sprite = _spriteAtlas.getSprite(name->second);
+    auto* sprite = _spriteAtlas.getSprite(name->second);
     if (sprite) {
         sprite->setScale(_scale);
     }

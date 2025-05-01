@@ -27,7 +27,7 @@ struct SpriteSheetDefinition {
 class SpriteAtlas {
 public:
     void load(const std::string& atlasDefinition);
-    const std::unique_ptr<sf::Sprite>& getSprite(const std::string& name);
+    sf::Sprite* getSprite(const std::string& name);
 
 private:
     std::unique_ptr<sf::Texture> _texture;

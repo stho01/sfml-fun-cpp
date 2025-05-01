@@ -6,11 +6,8 @@
 
 #include <extensions/extensions.h>
 #include "Agent.h"
-
-class AgentRenderer;
-class AgentUpdater;
-
-
+#include "AgentRenderer.h"
+#include "AgentUpdater.h"
 
 class FlockingBehaviour final : public stho::GameBase {
   struct Diagnostics {
@@ -31,7 +28,7 @@ public:
 
   void reset();
 
-  const Agent* getSelectedAgent() const { return m_agents[m_selectedIndex]; }
+  const std::shared_ptr<Agent>& getSelectedAgent() const { return m_agents[m_selectedIndex]; }
 
   bool getShowCollider() const { return m_showCollider; }
   void toggleShowCollider() { m_showCollider = !m_showCollider; }
@@ -52,17 +49,17 @@ public:
   float getAgentSpeed() const;
   void setAgentSpeed(float speed) const;
 
-  std::list<Agent*> getNeighbors(const Agent* agent);
+  std::list<std::shared_ptr<Agent>> getNeighbors(const Agent& agent);
 
   void spawnAgent();
   void removeLastAgent();
 
 private:
-  std::unique_ptr<stho::QuadTree<Agent*>> m_quadTree{nullptr};
-  std::vector<Agent*> m_agents;
-  stho::ObjectPool<Agent>* m_agentPool{};
-  AgentRenderer* m_agentRenderer{};
-  AgentUpdater* m_agentUpdater{};
+  stho::QuadTree<std::shared_ptr<Agent>> m_quadTree;
+  std::vector<std::shared_ptr<Agent>> m_agents{};
+  // stho::ObjectPool<Agent> m_agentPool{};
+  std::unique_ptr<AgentRenderer> m_agentRenderer{nullptr};
+  std::unique_ptr<AgentUpdater> m_agentUpdater{nullptr};
   bool m_showCollider{false};
   bool m_showNeighborhood{false};
   bool m_renderQuadTree{true};

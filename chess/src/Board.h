@@ -33,7 +33,7 @@ public:
     Cell* getCell(const sf::Vector2i& position);
     bool tryGetCell(const sf::Vector2i& position, Cell*& cell);
     bool tryGetEnemyCell(const sf::Vector2i& position, const PieceColor& color, Cell*& cell);
-    bool placePiece(int x, int y, Piece* piece);
+    bool placePiece(int x, int y, std::shared_ptr<Piece> piece);
     [[nodiscard]] sf::IntRect getBoundingBox(int index) const;
     void clear();
     bool movePiece(Cell& sourceCell, Cell& targetCell);
@@ -44,7 +44,7 @@ private:
     std::array<Cell, CELL_COUNT> _cells{};
     sf::Vector2f _position{0,0};
     sf::Vector2f _size{600,600};
-    stho::ObjectPool<Piece> _piecePool;
+    // stho::ObjectPool<Piece> _piecePool;
 
     [[nodiscard]] bool _inRange(int value) const;
 };

@@ -16,7 +16,7 @@ public:
 
     Cell(int x, int y) : _position({x,y}) { }
 
-    void setPiece(Piece* piece) {
+    void setPiece(std::shared_ptr<Piece> piece) {
         _piece = piece;
         if (piece)
             _piece->setPosition(_position);
@@ -26,11 +26,15 @@ public:
         return _piece == nullptr;
     }
 
-    Piece* getPiece() const {
+    const std::shared_ptr<Piece>& getPiece() const {
         return _piece;
     }
 
-    bool tryGetPiece(Piece*& piece) const {
+    std::shared_ptr<Piece>& getPiece() {
+        return _piece;
+    }
+
+    bool tryGetPiece(std::shared_ptr<Piece>& piece) const {
         piece = nullptr;
         if (_piece != nullptr) {
             piece = _piece;
@@ -54,5 +58,5 @@ public:
 
 private:
     sf::Vector2i _position;
-    Piece* _piece{nullptr};
+    std::shared_ptr<Piece> _piece{nullptr};
 };
