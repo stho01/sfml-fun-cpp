@@ -11,17 +11,19 @@
 #include "ExplosionSpawner.h"
 #include "ExplosionUpdater.h"
 #include "ParticleRenderer.h"
+#include "RocketRenderer.h"
 
 class Fireworks final : public stho::GameBase {
 
-    std::unique_ptr<sf::Texture> _earthTexture;
-    std::unique_ptr<sf::Sprite> _earthSprite;
+    std::unique_ptr<sf::Texture> _earthTexture{nullptr};
+    std::unique_ptr<sf::Sprite> _earthSprite{nullptr};
     ParticleRenderer _particleRenderer;
     ExplosionRenderer _explosionRenderer;
     ExplosionSpawner _explosionSpawner;
-    std::unique_ptr<ExplosionUpdater> _explosionUpdater;
+    std::unique_ptr<RocketRenderer> _rocketRenderer{nullptr};
+    std::unique_ptr<ExplosionUpdater> _explosionUpdater{nullptr};
     sf::CircleShape _earth{120,60};
-    std::unordered_set<std::shared_ptr<Explosion>> _explosions;
+    std::unordered_set<std::shared_ptr<Explosion>> _explosions{};
 
 public:
     const float GRAVITY{-9.81f*.75f};

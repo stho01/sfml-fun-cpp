@@ -6,6 +6,7 @@
 #include <execution>
 #include <iostream>
 #include "ExplosionUpdater.h"
+#include "Rocket.h"
 
 Fireworks::Fireworks(sf::RenderWindow* window)
     : GameBase(window)
@@ -27,6 +28,7 @@ void Fireworks::initialize() {
     Logger::Info("Initialized sprites");
 
     _explosionUpdater = std::make_unique<ExplosionUpdater>(*this);
+    _rocketRenderer = std::make_unique<RocketRenderer>(*getWindow(), _particleRenderer);
 
     _earth.setOrigin({
         _earth.getRadius(),
@@ -60,10 +62,7 @@ void Fireworks::update() {
     for (auto& explosion : _explosions) {
         _explosionUpdater->update(*explosion);
     }
-
-    erase_if(_explosions, [](const auto& explosion) {
-        return explosion->isDone();
-    });
+    erase_if(_explosions, [](const auto& explosion) { return explosion->isDone(); });
 
     // _explosions.erase(std::remove_if<std::shared_ptr<Explosion>>(_explosions.begin(), _explosions.end(),
     //     [](const auto& explosion) {
@@ -76,6 +75,11 @@ void Fireworks::render() {
     for (auto& explosion : _explosions) {
         _explosionRenderer.render(*explosion);
     }
+
+    Rocket rocket;
+    rocket.position = {100.f, 100.f};
+    rocket.mass = 15.f;
+    _rocketRenderer->render(rocket);
 }
 
 void Fireworks::unload() {
