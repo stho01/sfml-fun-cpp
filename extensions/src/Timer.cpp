@@ -2,9 +2,16 @@
 // // Created by stho on 02.04.2025.
 // //
 //
-// #include "extensions/Timer.h"
-// #include "extensions/Logger.h"
+ #include "extensions/Timer.h"
+
+// namespace stho {
 //
+//   std::chrono::microseconds Timer::DeltaTime = std::chrono::microseconds(0);
+//   int Timer::Fps = 0;
+//
+// }
+
+
 // std::chrono::high_resolution_clock::time_point stho::Timer::m_prevTime;
 // std::chrono::duration<double> stho::Timer::m_deltaTime;
 // int stho::Timer::m_fps;

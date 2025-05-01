@@ -1,0 +1,46 @@
+﻿//
+// Created by stenm on 01.05.2025.
+//
+
+#include "ExplosionUpdater.h"
+
+#include <execution>
+#include <extensions/extensions.h>
+#include "Fireworks.h"
+
+ExplosionUpdater::ExplosionUpdater(Fireworks& fireworks) : _fireworks(fireworks), _airResistance(0.09f) {
+}
+
+ExplosionUpdater::~ExplosionUpdater() = default;
+
+void ExplosionUpdater::setAirResistance(const float airResistance) {
+  _airResistance = airResistance;
+}
+
+float ExplosionUpdater::getAirResistance() const {
+  return _airResistance;
+}
+
+void ExplosionUpdater::update(Explosion& explosion) const {
+  for (auto& particle : explosion.particles()) {
+
+    particle.age += stho::Timer::deltaTimeSeconds() * 1000.f;
+
+    const auto distance = particle.position - _fireworks.getEarthPosition();
+    if (distance.lengthSquared() == 0.f) {
+      continue;
+    }
+
+    const auto gravityForce = distance.normalized() * _fireworks.GRAVITY * _airResistance;
+
+    sf::Vector2f direction{0.f, 0.f};
+    if (particle.velocity.lengthSquared() != 0.f) {
+      direction = particle.velocity.normalized();
+    }
+    const auto airResistanceDecay = -(direction * _airResistance);
+
+    particle.acceleration += (gravityForce + airResistanceDecay) / particle.mass * stho::Timer::deltaTimeSeconds();
+    particle.velocity += particle.acceleration;
+    particle.position += particle.velocity * stho::Timer::deltaTimeSeconds();
+  }
+}

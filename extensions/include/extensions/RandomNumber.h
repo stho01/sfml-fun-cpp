@@ -15,14 +15,19 @@ namespace stho {
         static int next(const int min, const int max) {
             std::random_device rd;
             std::mt19937 gen(rd());
-            std::uniform_int_distribution<> dis(min, max);
+            std::uniform_int_distribution<> dis(
+                std::min(min, max),
+                std::max(min, max));
+
             return dis(gen);
         }
 
         static float nextFloat(const float min, const float max) {
             std::random_device rd;
             std::mt19937 gen(rd());
-            std::uniform_real_distribution<float> dis(min, max);
+            std::uniform_real_distribution dis(
+                std::min(min, max),
+                std::max(min, max));
             return dis(gen);
         }
 
