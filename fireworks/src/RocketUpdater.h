@@ -20,7 +20,7 @@ public:
 private:
   static void _updateAge(Rocket& rocket);
   void _updatePosition(Rocket& rocket) const;
-  void _updateTrail(Rocket& rocket);
+  static void _updateTrail(Rocket& rocket);
   bool _intersectsWithEarth(const Rocket& rocket) const;
   void _handleEarthIntersection(Rocket& rocket) const;
   static void _useFuel(Rocket& rocket);

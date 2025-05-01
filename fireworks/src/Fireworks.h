@@ -30,7 +30,7 @@ class Fireworks final : public stho::GameBase {
     std::unordered_set<std::shared_ptr<Rocket>> _rockets{};
 
 public:
-    const float GRAVITY{-9.81f*.75f};
+    const float GRAVITY{-9.81f*1.5f};
 
     explicit Fireworks(sf::RenderWindow* window);
     ~Fireworks() override;

@@ -24,6 +24,10 @@ void RocketRenderer::render(const Rocket& rocket) {
   _rocketShape.setRadius(radius);
   _rocketShape.setOrigin({radius, radius});
   _target.draw(_rocketShape);
+
+  for (const auto& particle : rocket.trail) {
+    _particleRenderer.render(*particle);
+  }
 }
 
 

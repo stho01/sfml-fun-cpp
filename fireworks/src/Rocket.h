@@ -5,6 +5,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include "Particle.h"
 
 struct RocketId {
   static int getNextId() {
@@ -30,6 +31,9 @@ struct Rocket {
   float age{};
   float totalLifetime{};
   bool done{false};
+  std::vector<std::shared_ptr<Particle>> trail;
+  float trailEmitTime{0.f};;
+  float trailTimeSinceLastEmit{20.f};
 
   bool hasFuel() const { return fuel > 0; }
   bool isDead() const { return done || age >= totalLifetime; }
@@ -37,4 +41,7 @@ struct Rocket {
 
 private:
   int _id{0};
+
+
+
 };

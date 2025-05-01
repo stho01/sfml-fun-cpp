@@ -5,18 +5,16 @@
 #include "ExplosionSpawner.h"
 #include <numbers>
 
-ExplosionSpawner::ExplosionSpawner()
-  : _density({150.f,250.f})
-  , _lifetime({1000.f, 1500.f})
-  , _strength({40.f, 80.f})
-{
-  _colors.push_back(sf::Color::Red);
-  _colors.push_back(sf::Color::Green);
-  _colors.push_back(sf::Color::Blue);
+ExplosionSpawner::ExplosionSpawner() {
+  // _colors.push_back(sf::Color::Red);
+  // _colors.push_back(sf::Color::Green);
+  // _colors.push_back(sf::Color::Blue);
+  _colors.push_back(sf::Color(255,165,74));
+  _colors.push_back(sf::Color(200,200,200));
 }
 
 
-std::shared_ptr<Explosion> ExplosionSpawner::spawn(const sf::Vector2f pos) {
+std::shared_ptr<Explosion> ExplosionSpawner::spawn(const sf::Vector2f pos, const sf::Vector2f relativeSpeed) {
   const auto density = stho::RandomNumber::nextFloat(_density);
   const auto explosion = stho::ObjectPool<Explosion>::shared()->acquire(density);
   explosion->setStrength(stho::RandomNumber::nextFloat(_strength));
@@ -41,7 +39,7 @@ std::shared_ptr<Explosion> ExplosionSpawner::spawn(const sf::Vector2f pos) {
     particle->g = color.g;
     particle->b = color.b;
     particle->totalLifetime = lifeTime;
-    particle->velocity = velocity;
+    particle->velocity = velocity + (relativeSpeed / 2.f);
     particle->position = explosion->getPosition();
     particle->mass = stho::RandomNumber::nextFloat(.75f, 1.25f);
   }

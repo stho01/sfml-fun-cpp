@@ -8,7 +8,7 @@
 #include <extensions/extensions.h>
 #include "Fireworks.h"
 
-ExplosionUpdater::ExplosionUpdater(Fireworks& fireworks) : _fireworks(fireworks), _airResistance(0.09f) {
+ExplosionUpdater::ExplosionUpdater(Fireworks& fireworks) : _fireworks(fireworks), _airResistance(0.01f) {
 }
 
 ExplosionUpdater::~ExplosionUpdater() = default;
@@ -37,10 +37,14 @@ void ExplosionUpdater::update(Explosion& explosion) const {
     if (particle->velocity.lengthSquared() != 0.f) {
       direction = particle->velocity.normalized();
     }
-    const auto airResistanceDecay = -(direction * _airResistance);
+    const auto airResistanceDecay = -(direction * 0.1f);
 
-    particle->acceleration += (gravityForce + airResistanceDecay) / particle->mass * stho::Timer::deltaTimeSeconds();
-    particle->velocity += particle->acceleration;
+    sf::Vector2f acceleration = {0.f, 0.f};
+    acceleration += gravityForce / particle->mass;
+    acceleration += airResistanceDecay / particle->mass;
+
+    // particle->acceleration += (gravityForce + airResistanceDecay) / particle->mass * stho::Timer::deltaTimeSeconds();
+    particle->velocity += acceleration;
     particle->position += particle->velocity * stho::Timer::deltaTimeSeconds();
   }
 }

@@ -13,7 +13,7 @@ void RocketUpdater::update(Rocket& rocket) {
   _updateAge(rocket);
 
   if (rocket.isDead()) {
-    _game.addExplosion(_spawner.spawn(rocket.position));
+    _game.addExplosion(_spawner.spawn(rocket.position, rocket.velocity));
     return;
   }
 
@@ -34,18 +34,37 @@ void RocketUpdater::_updatePosition(Rocket& rocket) const {
   const auto gravity = (rocket.position - _game.getEarthPosition()).normalized() * _game.GRAVITY;
 
   auto force = stho::Vector2f::ZERO;
-  if (rocket.hasFuel() && rocket.direction.lengthSquared() > 0)
+  if (rocket.hasFuel())
     force = rocket.direction.normalized() * rocket.strength;
 
   // Logger::Info("Rocket dir {}", stho::Vector2f::asString(rocket.direction));
 
-  rocket.acceleration = ((force + gravity) / rocket.mass) * stho::Timer::deltaTimeSeconds();
-  rocket.velocity += rocket.acceleration;
+  sf::Vector2f acceleration = stho::Vector2f::ZERO;
+  acceleration += gravity / rocket.mass;
+  acceleration += force / rocket.mass;
+
+  rocket.velocity += acceleration;
   rocket.position += rocket.velocity * stho::Timer::deltaTimeSeconds();
 }
 
 void RocketUpdater::_updateTrail(Rocket& rocket) {
+  for (const auto& particle : rocket.trail) {
+    particle->age += stho::Timer::deltaTimeMilliseconds();
+  }
+  std::erase_if(rocket.trail, [](const auto& particle) { return particle->isDead(); });
+  rocket.trailTimeSinceLastEmit += stho::Timer::deltaTimeMilliseconds();
 
+  if (rocket.hasFuel() && rocket.trailTimeSinceLastEmit >= rocket.trailEmitTime) {
+    rocket.trailTimeSinceLastEmit = 0.f;
+    const auto particle = stho::ObjectPool<Particle>::shared()->acquire();
+    particle->position = rocket.position;
+    particle->totalLifetime = 200.0f;
+    particle->mass = 1.f;
+    particle->r = 255.f;
+    particle->g = 165.f;
+    particle->b = 74.f;
+    rocket.trail.push_back(particle);
+  }
 }
 
 bool RocketUpdater::_intersectsWithEarth(const Rocket& rocket) const {
